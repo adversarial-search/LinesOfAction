@@ -2,8 +2,8 @@ package assistants;
 
 public class LevelBuild {
 
-    public static int[][] emptyFields(){
-        return new int[][]{
+    public static byte[][] emptyFields(){
+        return new byte[][]{
                 {5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
                 {5, 5, 5, 5, 5, 5, 5, 5, 5, 5},
                 {5, 6, 7, 6, 7, 6, 7, 6, 7, 5},
@@ -17,8 +17,8 @@ public class LevelBuild {
                 {5, 5, 5, 5, 5, 5, 5, 5, 5, 5}
         };
     }
-    public static int[][] numbersAndLetters (){
-        return new int[][]{
+    public static byte[][] numbersAndLetters (){
+        return new byte[][]{
                 {-1, -1, -1, -1, -1, -1, -1, -1, -1, -1},
                 { 5, 16, 17, 18, 19, 20, 21, 22, 23,  5},
                 {15, -1, -1, -1, -1, -1, -1, -1, -1, 15},

@@ -1,18 +1,18 @@
 package objects;
 
 public class Point {
-    int row;
-    int col;
+    byte row;
+    byte col;
 
-    public Point ( int row, int col ) {
+    public Point ( byte row, byte col ) {
         this.row = row;
         this.col = col;
     }
 
-    public int getRow () {
+    public byte getRow () {
         return row;
     }
-    public int getCol () {
+    public byte getCol () {
         return col;
     }
 

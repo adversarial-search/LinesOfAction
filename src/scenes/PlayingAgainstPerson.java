@@ -12,15 +12,15 @@ import java.util.Queue;
 
 public class PlayingAgainstPerson extends GameScene implements SceneMethods{
     Game game;
-    private static final int WHITE_TURN = 0;
-    private static final int BLACK_TURN = 1;
-    private int turn = BLACK_TURN;
+    private static final byte WHITE_TURN = 0;
+    private static final byte BLACK_TURN = 1;
+    private byte turn = BLACK_TURN;
     private static boolean gameWon = false;
-    private static int winner;
-    private static final int W = 0;
-    private static final int B = 1;
-    private static final int E = 2;
-    private static int[][] piecesPositions;
+    private static byte winner;
+    private static final byte W = 0;
+    private static final byte B = 1;
+    private static final byte E = 2;
+    private static byte[][] piecesPositions;
     private boolean[][] positionsVisited;
     private ArrayList<Point> validMoves = new ArrayList<> (  );
     private Point activePiece = null;
@@ -52,8 +52,8 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
     }
     private void drawActive ( Graphics g ) {
         if(activePiece != null){
-            int row = activePiece.getRow ()+2;
-            int col = activePiece.getCol ()+1;
+            byte row = (byte)(activePiece.getRow ()+2);
+            byte col = (byte)(activePiece.getCol ()+1);
 
             if(turn == W)
                 g.drawImage ( tileManager.getSprite ( 1 ), 64 * col, 64 * row, null);
@@ -62,8 +62,8 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
         }
     }
     private void drawPieces ( Graphics g ) {
-        for(int i=0; i<piecesPositions.length; i++){
-            for(int j=0; j<piecesPositions[0].length; j++){
+        for(byte i=0; i<piecesPositions.length; i++){
+            for(byte j=0; j<piecesPositions[0].length; j++){
                 if(piecesPositions[i][j] == W)
                     g.drawImage ( tileManager.getSprite ( piecesPositions[i][j] ), 64*(j+1), 64*(i+2), null );
                 else if (piecesPositions[i][j] == B)
@@ -72,244 +72,254 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
         }
     }
     private void drawBackground ( Graphics g ) {
-        int[][] emptyFields = LevelBuild.emptyFields ( );
-        int[][] numbersAndLetters = LevelBuild.numbersAndLetters ();
+        byte[][] emptyFields = LevelBuild.emptyFields ( );
+        byte[][] numbersAndLetters = LevelBuild.numbersAndLetters ();
 
-        for(int i=0; i<emptyFields.length; i++)
-            for(int j=0; j<emptyFields[0].length; j++)
+        for(byte i=0; i<emptyFields.length; i++)
+            for(byte j=0; j<emptyFields[0].length; j++)
                 g.drawImage ( tileManager.getSprite ( emptyFields[i][j] ), 64*j, 64*i, null );
 
-        for(int i=0; i< numbersAndLetters.length; i++)
-            for(int j=0; j< numbersAndLetters[0].length; j++)
+        for(byte i=0; i< numbersAndLetters.length; i++)
+            for(byte j=0; j< numbersAndLetters[0].length; j++)
                 if(numbersAndLetters[i][j]>=0)
                     g.drawImage ( tileManager.getSprite ( numbersAndLetters[i][j] ), 64*j, 64*i, null );
     }
 
 
 
+    private void setValidMovesAndActivePiece ( byte row, byte col, byte opponentPiece, byte playersPiece ) {
+        validMoves = getValidMoves ( row, col, opponentPiece, playersPiece );
+        activePiece = new Point ( row, col );
+    }
+    private void resetValidMovesAndActivePiece ( ) {
+        validMoves = new ArrayList<> (  );
+        activePiece = null;
+    }
+    private void changeTurn ( ) {
+        if(turn == BLACK_TURN) turn = WHITE_TURN;
+        else turn = BLACK_TURN;
+        resetValidMovesAndActivePiece ();
+    }
+    private void checkWinningConditions ( ) {
+        if(turn == WHITE_TURN){
+            wins(W);
+            wins(B);
+        }else{
+            wins(B);
+            wins(W);
+        }
+    }
+    private void wins(byte T){
+        if(!gameWon)
+            if (allPiecesConnected ( T, getFirstPiece ( T ) )){
+                gameWon = true;
+                winner = T;
+            }
+    }
+
+
+
     @Override
     public void mouseClicked ( int x, int y ) {
-        if(!gameWon){
-            int row = getRow ( y );
-            int col = getCol ( x );
+        if(gameWon) {
+            if(winner == W)
+                System.out.println ( "Game already won by: WHITE" );
+            else
+                System.out.println ( "Game already won by: BLACK" );
+            return;
+        }
 
-            if(turn == WHITE_TURN){
-                if(activePiece == null){
-                    if(containsWhitePiece ( row, col )){
-                        validMoves = getValidMoves ( row, col, B, W );
-                        activePiece = new Point (row, col);
-                    }else {
-                        validMoves = new ArrayList<> (  );
-                        activePiece = null;
-                    }
-                }else{
-                    Point selectedPiece = new Point ( row, col );
-                    if(activePiece.equals ( selectedPiece ) || containsWhitePiece ( row, col )) {
-                        validMoves = getValidMoves ( row, col, B, W );
-                        activePiece = selectedPiece;
-                    }else if (movedPieceToValidPosition(selectedPiece, W)){
-                        piecesPositions[activePiece.getRow ()][activePiece.getCol ()] = E;
-                        piecesPositions[selectedPiece.getRow ()][selectedPiece.getCol ()] = W;
+        byte row = getRow ( y );
+        byte col = getCol ( x );
 
-                        turn = BLACK_TURN;
-                        activePiece = null;
-                        validMoves = new ArrayList<> (  );
+        if(turn == WHITE_TURN){
+            if(activePiece == null)
+                if(containsWhitePiece ( row, col ))
+                    setValidMovesAndActivePiece ( row, col, B, W );
+                else
+                    resetValidMovesAndActivePiece ();
+            else{
+                Point selectedPiece = new Point ( row, col );
+                if(activePiece.equals ( selectedPiece ) || containsWhitePiece ( row, col ))
+                    setValidMovesAndActivePiece ( row, col, B, W );
+                else if (movedPieceToValidPosition(selectedPiece, W)){
+                    piecesPositions[activePiece.getRow ()][activePiece.getCol ()] = E;
+                    piecesPositions[selectedPiece.getRow ()][selectedPiece.getCol ()] = W;
 
-                        if(allPiecesConnected(W, selectedPiece)){
-                            System.out.println ( "White wins." );
-                            gameWon = true;
-                            winner = W;
-                        }
-                    }else {
-                        validMoves = new ArrayList<> (  );
-                        activePiece = null;
-                    }
-                }
-            }else if (turn == BLACK_TURN){
-                if( activePiece == null ){
-                    if (containsBlackPiece ( row, col )){
-                        validMoves = getValidMoves ( row, col, W, B );
-                        activePiece = new Point ( row, col );
-                    }else{
-                        validMoves = new ArrayList<> (  );
-                        activePiece = null;
-                    }
-                }else{
-                    Point selectedPiece = new Point ( row, col );
-                    if( activePiece.equals ( selectedPiece ) || containsBlackPiece ( row, col ) ){
-                        validMoves = getValidMoves ( row, col, W, B );
-                        activePiece = selectedPiece;
-                    }else if(movedPieceToValidPosition ( selectedPiece, B )){
-                        piecesPositions[activePiece.getRow ()][activePiece.getCol ()] = E;
-                        piecesPositions[selectedPiece.getRow ()][selectedPiece.getCol ()] = B;
-
-                        turn = WHITE_TURN;
-                        activePiece = null;
-                        validMoves = new ArrayList<> (  );
-
-                        if(allPiecesConnected(B, selectedPiece)){
-                            System.out.println ( "Black wins." );
-                            gameWon = true;
-                            winner = B;
-                        }
-                    }else{
-                        validMoves = new ArrayList<> (  );
-                        activePiece = null;
-                    }
-                }
+                    checkWinningConditions();
+                    changeTurn ();
+                }else
+                    resetValidMovesAndActivePiece ();
             }
-        }else{
-            if(winner == B)
-                System.out.println ( "Game is already won. Winner is Black" );
-            else if(winner == W)
-                System.out.println ( "Game is already won. Winner is White" );
+        }else if (turn == BLACK_TURN){
+            if( activePiece == null )
+                if (containsBlackPiece ( row, col ))
+                    setValidMovesAndActivePiece ( row, col, W, B );
+                else
+                    resetValidMovesAndActivePiece ();
+            else{
+                Point selectedPiece = new Point ( row, col );
+                if( activePiece.equals ( selectedPiece ) || containsBlackPiece ( row, col ) )
+                    setValidMovesAndActivePiece ( row, col, W, B );
+                else if(movedPieceToValidPosition ( selectedPiece, B )){
+                    piecesPositions[activePiece.getRow ()][activePiece.getCol ()] = E;
+                    piecesPositions[selectedPiece.getRow ()][selectedPiece.getCol ()] = B;
+
+                    checkWinningConditions ();
+                    changeTurn ();
+                }else
+                    resetValidMovesAndActivePiece ();
+            }
         }
     }
 
 
 
-    private ArrayList<Point> getValidMoves ( int row, int col, int opponentPiece, int playersPiece ) {
+    private ArrayList<Point> getValidMoves ( byte row, byte col, byte opponentPiece, byte playersPiece ) {
         ArrayList<Point> tempValidMoves = new ArrayList<> (  );
         boolean pathContainsOpponentPiece;
 
         //horizontal movement
         {
-            int numHorizontalPieces = 0;
-            for(int x = 0; x < 8; x++) if(piecesPositions[row][x] != E) numHorizontalPieces++;
+            byte numHorizontalPieces = 0;
+            for(byte x = 0; x < 8; x++)
+                if(piecesPositions[row][x] != E)
+                    numHorizontalPieces++;
 
             //right movement
             pathContainsOpponentPiece = false;
             if(col + numHorizontalPieces < 8){
-                for(int x = col + 1; x < col + numHorizontalPieces; x++)
+                for(byte x = (byte)(col + 1); x < col + numHorizontalPieces; x++)
                     if (piecesPositions[row][x] == opponentPiece) {
                         pathContainsOpponentPiece = true;
                         break;
                     }
                 if(!pathContainsOpponentPiece && piecesPositions[row][col+numHorizontalPieces] != playersPiece)
-                    tempValidMoves.add ( new Point ( row, col+numHorizontalPieces ) );
+                    tempValidMoves.add ( new Point ( row, (byte)(col+numHorizontalPieces) ) );
             }
 
             //left movement
             pathContainsOpponentPiece = false;
             if(col - numHorizontalPieces >= 0){
-                for(int x = col - 1; x > col - numHorizontalPieces; x--)
+                for(byte x = (byte)(col - 1); x > col - numHorizontalPieces; x--)
                     if (piecesPositions[row][x] == opponentPiece) {
                         pathContainsOpponentPiece = true;
                         break;
                     }
                 if(!pathContainsOpponentPiece && piecesPositions[row][col-numHorizontalPieces] != playersPiece)
-                    tempValidMoves.add ( new Point ( row, col-numHorizontalPieces ) );
+                    tempValidMoves.add ( new Point ( row, (byte)(col-numHorizontalPieces) ) );
             }
         }
 
         //vertical movement
         {
-            int numVerticalPieces = 0;
-            for(int y=0; y < 8; y++) if(piecesPositions[y][col] != E) numVerticalPieces++;
+            byte numVerticalPieces = 0;
+            for(byte y=0; y < 8; y++)
+                if(piecesPositions[y][col] != E)
+                    numVerticalPieces++;
 
             //downwards movement
             pathContainsOpponentPiece = false;
             if(row + numVerticalPieces < 8){
-                for(int y = row + 1; y < row + numVerticalPieces; y++)
+                for(byte y = (byte)(row + 1); y < row + numVerticalPieces; y++)
                     if (piecesPositions[y][col] == opponentPiece) {
                         pathContainsOpponentPiece = true;
                         break;
                     }
                 if(!pathContainsOpponentPiece && piecesPositions[row+numVerticalPieces][col] != playersPiece)
-                    tempValidMoves.add ( new Point ( row+numVerticalPieces, col ) );
+                    tempValidMoves.add ( new Point ( (byte)(row+numVerticalPieces), col ) );
             }
 
             //upwards movement
             pathContainsOpponentPiece = false;
             if(row - numVerticalPieces >= 0){
-                for(int y = row - 1; y > row - numVerticalPieces; y--)
+                for(byte y = (byte)(row - 1); y > row - numVerticalPieces; y--)
                     if (piecesPositions[y][col] == opponentPiece) {
                         pathContainsOpponentPiece = true;
                         break;
                     }
                 if(!pathContainsOpponentPiece && piecesPositions[row - numVerticalPieces][col] != playersPiece)
-                    tempValidMoves.add ( new Point ( row - numVerticalPieces, col ) );
+                    tempValidMoves.add ( new Point ( (byte)(row - numVerticalPieces), col ) );
             }
         }
 
         //main diagonal movement
         {
-            int numMainDiagPieces = 0;
-            int minVertOrHorizDist = Math.min(row, col);
-            for(int y = row-minVertOrHorizDist, x = col-minVertOrHorizDist; y < 8 && x < 8; y++, x++)
+            byte numMainDiagPieces = 0;
+            byte minVertOrHorizDist = (byte)Math.min(row, col);
+            for(byte y = (byte)(row-minVertOrHorizDist), x = (byte)(col-minVertOrHorizDist); y < 8 && x < 8; y++, x++)
                 if(piecesPositions[y][x] != E)
                     numMainDiagPieces++;
 
             //down diagonal movement
             pathContainsOpponentPiece = false;
             if(row + numMainDiagPieces < 8 && col + numMainDiagPieces < 8){
-                for(int y = row + 1, x = col + 1; y < row + numMainDiagPieces && x < col + numMainDiagPieces; y++, x++)
+                for(byte y = (byte)(row + 1), x = (byte)(col + 1); y < row + numMainDiagPieces && x < col + numMainDiagPieces; y++, x++)
                     if (piecesPositions[y][x] == opponentPiece) {
                         pathContainsOpponentPiece = true;
                         break;
                     }
                 if(!pathContainsOpponentPiece && piecesPositions[row + numMainDiagPieces][col + numMainDiagPieces] != playersPiece)
-                    tempValidMoves.add ( new Point ( row + numMainDiagPieces, col + numMainDiagPieces ) );
+                    tempValidMoves.add ( new Point ( (byte)(row + numMainDiagPieces), (byte)(col + numMainDiagPieces) ) );
             }
 
             //up diagonal movement
             pathContainsOpponentPiece = false;
             if(row - numMainDiagPieces >= 0 && col - numMainDiagPieces >= 0){
-                for(int y = row - 1, x = col - 1; y > row - numMainDiagPieces && x > col - numMainDiagPieces; y--, x--)
+                for(byte y = (byte)(row - 1), x = (byte)(col - 1); y > row - numMainDiagPieces && x > col - numMainDiagPieces; y--, x--)
                     if (piecesPositions[y][x] == opponentPiece) {
                         pathContainsOpponentPiece = true;
                         break;
                     }
                 if(!pathContainsOpponentPiece && piecesPositions[row - numMainDiagPieces][col - numMainDiagPieces] != playersPiece)
-                    tempValidMoves.add ( new Point ( row - numMainDiagPieces, col - numMainDiagPieces ) );
+                    tempValidMoves.add ( new Point ( (byte)(row - numMainDiagPieces), (byte)(col - numMainDiagPieces) ) );
             }
         }
 
         //anti diagonal movement
         {
-            int numAntiDiagPieces = 0;
-            int minVertOrHorizDist = Math.min(7-row, col);
-            for(int y = row+minVertOrHorizDist, x = col-minVertOrHorizDist; y >= 0 && x < 8; y--, x++)
+            byte numAntiDiagPieces = 0;
+            byte minVertOrHorizDist = (byte)Math.min(7-row, col);
+            for(byte y = (byte)(row+minVertOrHorizDist), x = (byte)(col-minVertOrHorizDist); y >= 0 && x < 8; y--, x++)
                 if(piecesPositions[y][x] != E)
                     numAntiDiagPieces++;
 
             //down anti diagonal movement
             pathContainsOpponentPiece = false;
             if(row + numAntiDiagPieces < 8 && col - numAntiDiagPieces >= 0){
-                for(int y = row + 1, x = col - 1; y < row + numAntiDiagPieces && x > col - numAntiDiagPieces; y++, x--)
+                for(byte y = (byte)(row + 1), x = (byte)(col - 1); y < row + numAntiDiagPieces && x > col - numAntiDiagPieces; y++, x--)
                     if (piecesPositions[y][x] == opponentPiece) {
                         pathContainsOpponentPiece = true;
                         break;
                     }
                 if(!pathContainsOpponentPiece && piecesPositions[row + numAntiDiagPieces][col - numAntiDiagPieces] != playersPiece)
-                    tempValidMoves.add ( new Point ( row + numAntiDiagPieces, col - numAntiDiagPieces ) );
+                    tempValidMoves.add ( new Point ( (byte)(row + numAntiDiagPieces), (byte)(col - numAntiDiagPieces) ) );
             }
 
             //up anti diagonal movement
             pathContainsOpponentPiece = false;
             if(row - numAntiDiagPieces >= 0 && col + numAntiDiagPieces < 8){
-                for(int y = row - 1, x = col + 1; y > row - numAntiDiagPieces && x < col + numAntiDiagPieces; y--, x++)
+                for(byte y = (byte)(row - 1), x = (byte)(col + 1); y > row - numAntiDiagPieces && x < col + numAntiDiagPieces; y--, x++)
                     if (piecesPositions[y][x] == opponentPiece) {
                         pathContainsOpponentPiece = true;
                         break;
                     }
                 if(!pathContainsOpponentPiece && piecesPositions[row - numAntiDiagPieces][col + numAntiDiagPieces] != playersPiece)
-                    tempValidMoves.add ( new Point ( row - numAntiDiagPieces, col + numAntiDiagPieces ) );
+                    tempValidMoves.add ( new Point ( (byte)(row - numAntiDiagPieces), (byte)(col + numAntiDiagPieces) ) );
             }
         }
 
         return tempValidMoves;
     }
-    private boolean movedPieceToValidPosition ( Point selectedPiece, int playersPiece ) {
-        if(validMoves.contains ( selectedPiece )) {
+    private boolean movedPieceToValidPosition ( Point selectedPiece, byte playersPiece ) {
+        if(validMoves.contains ( selectedPiece ))
             return piecesPositions[selectedPiece.getRow ( )][selectedPiece.getCol ( )] != playersPiece;
-        }
         return false;
     }
 
 
 
-    private boolean allPiecesConnected ( int p, Point startingPiece ) {
+    private boolean allPiecesConnected ( byte p, Point startingPiece ) {
 
         resetPositionsVisited ();
 
@@ -326,45 +336,45 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
             }
         }
 
-        for(int i=0; i<8; i++)
-            for(int j=0; j<8; j++)
+        for(byte i=0; i<8; i++)
+            for(byte j=0; j<8; j++)
                 if(piecesPositions[i][j] == p && !positionsVisited[i][j])
                     return false;
         return true;
     }
-    private ArrayList<Point> getNeighbours ( int p, Point toEvaluate ) {
+    private ArrayList<Point> getNeighbours ( byte p, Point toEvaluate ) {
         ArrayList<Point> neighbours = new ArrayList<> (  );
-        int row = toEvaluate.getRow ();
-        int col = toEvaluate.getCol ();
+        byte row = toEvaluate.getRow ();
+        byte col = toEvaluate.getCol ();
 
-        for(int i=-1; i<2; i++)
-            for(int j=-1; j<2; j++)
+        for(byte i=-1; i<2; i++)
+            for(byte j=-1; j<2; j++)
                 if(row+i >= 0 && row+i < 8 && col+j >= 0 && col+j < 8)
                     if(piecesPositions[row+i][col+j] == p && !positionsVisited[row + i][col + j])
-                        neighbours.add ( new Point ( row+i, col+j ) );
+                        neighbours.add ( new Point ( (byte)(row+i), (byte)(col+j) ) );
         return neighbours;
     }
 
 
 
-    private boolean containsWhitePiece ( int row, int col ) {
+    private boolean containsWhitePiece ( byte row, byte col ) {
         if(row >= 0 && row < 8 && col >= 0 && col < 8)
             return piecesPositions[row][col] == W;
         return false;
     }
-    private boolean containsBlackPiece ( int row, int col ) {
+    private boolean containsBlackPiece ( byte row, byte col ) {
         if(row >= 0 && row < 8 && col >= 0 && col < 8)
             return piecesPositions[row][col] == B;
         return false;
     }
-    private int getCol ( int x ) {
-        return x/64-1;
+    private byte getCol ( int x ) {
+        return (byte)(x/64-1);
     }
-    private int getRow ( int y ) {
-        return y/64-2;
+    private byte getRow ( int y ) {
+        return (byte)(y/64-2);
     }
     public static void resetPiecesPositions(){
-        piecesPositions = new int[][]{
+        piecesPositions = new byte[][]{
                 {E, B, B, B, B, B, B, E},
                 {W, E, E, E, E, E, E, W},
                 {W, E, E, E, E, E, E, W},
@@ -387,6 +397,14 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
                 {false, false, false, false, false, false, false, false}
         };
     }
+    private Point getFirstPiece (byte b) {
+        for(byte i=0; i<8; i++)
+            for(byte j=0; j<8; j++)
+                if(piecesPositions[i][j] == b)
+                    return new Point ( i, j );
+        return null;
+    }
+
 
 
     @Override
@@ -402,3 +420,4 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
 
     }
 }
+
