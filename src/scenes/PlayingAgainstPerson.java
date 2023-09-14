@@ -5,45 +5,31 @@ import objects.Point;
 import main.Game;
 import managers.TileManager;
 import java.awt.*;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Queue;
 
 
-//TODO add winning state check
 public class PlayingAgainstPerson extends GameScene implements SceneMethods{
     Game game;
     private static final int WHITE_TURN = 0;
     private static final int BLACK_TURN = 1;
     private int turn = BLACK_TURN;
-
+    private static boolean gameWon = false;
+    private static int winner;
     private static final int W = 0;
     private static final int B = 1;
     private static final int E = 2;
-
     private static int[][] piecesPositions;
-
+    private boolean[][] positionsVisited;
     private ArrayList<Point> validMoves = new ArrayList<> (  );
     private Point activePiece = null;
-
     private final TileManager tileManager = new TileManager ();
-
     public PlayingAgainstPerson ( Game game) {
         super ( game );
         this.game = game;
     }
 
-
-    public static void resetPiecesPositions(){
-        piecesPositions = new int[][]{
-                {E, B, B, B, B, B, B, E},
-                {W, E, E, E, E, E, E, W},
-                {W, E, E, E, E, E, E, W},
-                {W, E, E, E, E, E, E, W},
-                {W, E, E, E, E, E, E, W},
-                {W, E, E, E, E, E, E, W},
-                {W, E, E, E, E, E, E, W},
-                {E, B, B, B, B, B, B, E}
-        };
-    }
 
 
     @Override
@@ -100,72 +86,87 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
     }
 
 
+
     @Override
     public void mouseClicked ( int x, int y ) {
-        int row = getRow ( y );
-        int col = getCol ( x );
+        if(!gameWon){
+            int row = getRow ( y );
+            int col = getCol ( x );
 
-        if(turn == WHITE_TURN){
-            if(activePiece == null){
-                if(containsWhitePiece ( row, col )){
-                    validMoves = getValidMoves ( row, col, B, W );
-                    activePiece = new Point (row, col);
-                }else {
-                    validMoves = new ArrayList<> (  );
-                    activePiece = null;
+            if(turn == WHITE_TURN){
+                if(activePiece == null){
+                    if(containsWhitePiece ( row, col )){
+                        validMoves = getValidMoves ( row, col, B, W );
+                        activePiece = new Point (row, col);
+                    }else {
+                        validMoves = new ArrayList<> (  );
+                        activePiece = null;
+                    }
+                }else{
+                    Point selectedPiece = new Point ( row, col );
+                    if(activePiece.equals ( selectedPiece ) || containsWhitePiece ( row, col )) {
+                        validMoves = getValidMoves ( row, col, B, W );
+                        activePiece = selectedPiece;
+                    }else if (movedPieceToValidPosition(selectedPiece, W)){
+                        piecesPositions[activePiece.getRow ()][activePiece.getCol ()] = E;
+                        piecesPositions[selectedPiece.getRow ()][selectedPiece.getCol ()] = W;
+
+                        turn = BLACK_TURN;
+                        activePiece = null;
+                        validMoves = new ArrayList<> (  );
+
+                        if(allPiecesConnected(W, selectedPiece)){
+                            System.out.println ( "White wins." );
+                            gameWon = true;
+                            winner = W;
+                        }
+                    }else {
+                        validMoves = new ArrayList<> (  );
+                        activePiece = null;
+                    }
                 }
-            }else{
-                Point selectedPiece = new Point ( row, col );
-                if(activePiece.equals ( selectedPiece ) || containsWhitePiece ( row, col )) {
-                    validMoves = getValidMoves ( row, col, B, W );
-                    activePiece = selectedPiece;
-                }else if (movedPieceToValidPosition(selectedPiece, W)){
-                    piecesPositions[activePiece.getRow ()][activePiece.getCol ()] = E;
-                    piecesPositions[selectedPiece.getRow ()][selectedPiece.getCol ()] = W;
+            }else if (turn == BLACK_TURN){
+                if( activePiece == null ){
+                    if (containsBlackPiece ( row, col )){
+                        validMoves = getValidMoves ( row, col, W, B );
+                        activePiece = new Point ( row, col );
+                    }else{
+                        validMoves = new ArrayList<> (  );
+                        activePiece = null;
+                    }
+                }else{
+                    Point selectedPiece = new Point ( row, col );
+                    if( activePiece.equals ( selectedPiece ) || containsBlackPiece ( row, col ) ){
+                        validMoves = getValidMoves ( row, col, W, B );
+                        activePiece = selectedPiece;
+                    }else if(movedPieceToValidPosition ( selectedPiece, B )){
+                        piecesPositions[activePiece.getRow ()][activePiece.getCol ()] = E;
+                        piecesPositions[selectedPiece.getRow ()][selectedPiece.getCol ()] = B;
 
-                    turn = BLACK_TURN;
-                    activePiece = null;
-                    validMoves = new ArrayList<> (  );
-                }else {
-                    validMoves = new ArrayList<> (  );
-                    activePiece = null;
+                        turn = WHITE_TURN;
+                        activePiece = null;
+                        validMoves = new ArrayList<> (  );
+
+                        if(allPiecesConnected(B, selectedPiece)){
+                            System.out.println ( "Black wins." );
+                            gameWon = true;
+                            winner = B;
+                        }
+                    }else{
+                        validMoves = new ArrayList<> (  );
+                        activePiece = null;
+                    }
                 }
             }
-        }else if (turn == BLACK_TURN){
-            if( activePiece == null ){
-                if (containsBlackPiece ( row, col )){
-                    validMoves = getValidMoves ( row, col, W, B );
-                    activePiece = new Point ( row, col );
-                }else{
-                    validMoves = new ArrayList<> (  );
-                    activePiece = null;
-                }
-            }else{
-                Point selectedPiece = new Point ( row, col );
-                if( activePiece.equals ( selectedPiece ) || containsBlackPiece ( row, col ) ){
-                    validMoves = getValidMoves ( row, col, W, B );
-                    activePiece = selectedPiece;
-                }else if(movedPieceToValidPosition ( selectedPiece, B )){
-                    piecesPositions[activePiece.getRow ()][activePiece.getCol ()] = E;
-                    piecesPositions[selectedPiece.getRow ()][selectedPiece.getCol ()] = B;
-
-                    turn = WHITE_TURN;
-                    activePiece = null;
-                    validMoves = new ArrayList<> (  );
-                }else{
-                    validMoves = new ArrayList<> (  );
-                    activePiece = null;
-                }
-            }
+        }else{
+            if(winner == B)
+                System.out.println ( "Game is already won. Winner is Black" );
+            else if(winner == W)
+                System.out.println ( "Game is already won. Winner is White" );
         }
     }
 
-    private boolean movedPieceToValidPosition ( Point selectedPiece, int playersPiece ) {
-        if(validMoves.contains ( selectedPiece )) {
-            return piecesPositions[selectedPiece.getRow ( )][selectedPiece.getCol ( )] != playersPiece;
-        }
-        return false;
-    }
+
 
     private ArrayList<Point> getValidMoves ( int row, int col, int opponentPiece, int playersPiece ) {
         ArrayList<Point> tempValidMoves = new ArrayList<> (  );
@@ -299,6 +300,52 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
 
         return tempValidMoves;
     }
+    private boolean movedPieceToValidPosition ( Point selectedPiece, int playersPiece ) {
+        if(validMoves.contains ( selectedPiece )) {
+            return piecesPositions[selectedPiece.getRow ( )][selectedPiece.getCol ( )] != playersPiece;
+        }
+        return false;
+    }
+
+
+
+    private boolean allPiecesConnected ( int p, Point startingPiece ) {
+
+        resetPositionsVisited ();
+
+        Queue<Point> queue = new ArrayDeque<> (  );
+        queue.add ( startingPiece );
+
+        while( !queue.isEmpty () ){
+            Point toEvaluate = queue.remove ();
+
+            if(!positionsVisited[toEvaluate.getRow ()][toEvaluate.getCol ()]) {
+                ArrayList<Point> neighbours = getNeighbours ( p, toEvaluate );
+                queue.addAll ( neighbours );
+                positionsVisited[toEvaluate.getRow ()][toEvaluate.getCol ()] = true;
+            }
+        }
+
+        for(int i=0; i<8; i++)
+            for(int j=0; j<8; j++)
+                if(piecesPositions[i][j] == p && !positionsVisited[i][j])
+                    return false;
+        return true;
+    }
+    private ArrayList<Point> getNeighbours ( int p, Point toEvaluate ) {
+        ArrayList<Point> neighbours = new ArrayList<> (  );
+        int row = toEvaluate.getRow ();
+        int col = toEvaluate.getCol ();
+
+        for(int i=-1; i<2; i++)
+            for(int j=-1; j<2; j++)
+                if(row+i >= 0 && row+i < 8 && col+j >= 0 && col+j < 8)
+                    if(piecesPositions[row+i][col+j] == p && !positionsVisited[row + i][col + j])
+                        neighbours.add ( new Point ( row+i, col+j ) );
+        return neighbours;
+    }
+
+
 
     private boolean containsWhitePiece ( int row, int col ) {
         if(row >= 0 && row < 8 && col >= 0 && col < 8)
@@ -310,16 +357,35 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
             return piecesPositions[row][col] == B;
         return false;
     }
-    private boolean containsNoPiece ( int row, int col ){
-        if(row >= 0 && row < 8 && col >= 0 && col < 8)
-            return piecesPositions[row][col] == E;
-        return false;
-    }
     private int getCol ( int x ) {
         return x/64-1;
     }
     private int getRow ( int y ) {
         return y/64-2;
+    }
+    public static void resetPiecesPositions(){
+        piecesPositions = new int[][]{
+                {E, B, B, B, B, B, B, E},
+                {W, E, E, E, E, E, E, W},
+                {W, E, E, E, E, E, E, W},
+                {W, E, E, E, E, E, E, W},
+                {W, E, E, E, E, E, E, W},
+                {W, E, E, E, E, E, E, W},
+                {W, E, E, E, E, E, E, W},
+                {E, B, B, B, B, B, B, E}
+        };
+    }
+    public void resetPositionsVisited(){
+        positionsVisited = new boolean[][]{
+                {false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false},
+                {false, false, false, false, false, false, false, false}
+        };
     }
 
 
