@@ -31,6 +31,7 @@ public class Menu extends GameScene implements SceneMethods{
 
     @Override
     public void render ( Graphics g ) {
+
         for(int y=0; y<11; y++){
             for(int x=0; x<10; x++)
                 if ((x + y) % 2 == 0)
@@ -47,6 +48,7 @@ public class Menu extends GameScene implements SceneMethods{
         if(bPlayingAgainstAI.getBounds ().contains ( x, y )){
             SetGameState(PLAYING_AGAINST_AI);
         } else if (bPlayingAgainstPerson.getBounds ().contains ( x, y )) {
+            PlayingAgainstPerson.resetPiecesPositions ();
             SetGameState ( PLAYING_AGAINST_PERSON );
         } else if (bAIAgainstAI.getBounds ().contains ( x, y )) {
             SetGameState ( AI_AGAINST_AI );

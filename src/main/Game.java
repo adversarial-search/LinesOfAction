@@ -11,7 +11,7 @@ public class Game extends JFrame implements Runnable {
     private GameScreen gameScreen;
     private Thread gameThread;
 
-    private final double FPS_SET = 30.0;
+    private final double FPS_SET = 60.0;
     private final double UPS_SET = 60.0;
 
     //Classes
@@ -110,7 +110,7 @@ public class Game extends JFrame implements Runnable {
             }
 
             if(System.currentTimeMillis () - lastTimeCheck >= 1_000){
-                System.out.println ( "FPS: " + frames + " | UPS: " + updates );
+                //System.out.println ( "FPS: " + frames + " | UPS: " + updates );
                 frames = 0;
                 updates = 0;
                 lastTimeCheck = System.currentTimeMillis ();

@@ -1,12 +1,6 @@
 package main;
 
-import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Random;
 
 public class Render {
     private Game game;
@@ -15,16 +9,16 @@ public class Render {
         this.game = game;
     }
 
-    public void render( Graphics g){
+    public void render( Graphics g ){
         switch(GameStates.gameState){
             case MENU:
                 game.getMenu ().render ( g );
+                break;
+            case PLAYING_AGAINST_PERSON:
+                game.getPlayingAgainstPerson ().render ( g );
                 break;
         }
     }
 
 }
-//    MENU,
-//    PLAYING_AGAINST_AI,
-//    PLAYING_AGAINST_PERSON,
-//    AI_AGAINST_AI;
+
