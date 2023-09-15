@@ -24,6 +24,7 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
                     break;
                 case PLAYING_AGAINST_PERSON:
                     game.getPlayingAgainstPerson ().mouseClicked ( e.getX (), e.getY () );
+                    break;
             }
         }
     }
@@ -33,6 +34,9 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
             case MENU:
                 game.getMenu ().mouseMoved ( e.getX (), e.getY () );
                 break;
+            case PLAYING_AGAINST_PERSON:
+                game.getPlayingAgainstPerson ().mouseMoved ( e.getX (), e.getY () );
+                break;
         }
     }
     @Override
@@ -41,6 +45,9 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
             case MENU:
                 game.getMenu ().mousePressed ( e.getX (), e.getY () );
                 break;
+            case PLAYING_AGAINST_PERSON:
+                game.getPlayingAgainstPerson ().mousePressed ( e.getX (), e.getY () );
+                break;
         }
     }
     @Override
@@ -48,6 +55,9 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
         switch (gameState){
             case MENU:
                 game.getMenu ().mouseReleased ( e.getX (), e.getY () );
+                break;
+            case PLAYING_AGAINST_PERSON:
+                game.getPlayingAgainstPerson ().mouseReleased ( e. getX (), e.getY () );
                 break;
         }
     }

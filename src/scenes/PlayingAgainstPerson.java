@@ -4,18 +4,19 @@ import assistants.LevelBuild;
 import objects.Point;
 import main.Game;
 import managers.TileManager;
+import ui.MyButton;
 import java.awt.*;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Queue;
-
+import static main.GameStates.*;
 
 public class PlayingAgainstPerson extends GameScene implements SceneMethods{
     Game game;
     private static final byte WHITE_TURN = 0;
     private static final byte BLACK_TURN = 1;
-    private byte turn = BLACK_TURN;
-    private static boolean gameWon = false;
+    private static byte turn;
+    private static boolean gameWon;
     private static byte winner;
     private static final byte W = 0;
     private static final byte B = 1;
@@ -25,9 +26,18 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
     private ArrayList<Point> validMoves = new ArrayList<> (  );
     private Point activePiece = null;
     private final TileManager tileManager = new TileManager ();
+    private MyButton bMenu, bReset;
     public PlayingAgainstPerson ( Game game) {
         super ( game );
         this.game = game;
+        initButtons();
+    }
+
+
+
+    private void initButtons () {
+        bMenu = new MyButton ( "Menu", 14, 12, 100, 40 );
+        bReset = new MyButton ( "Reset", 128, 12, 100, 40 );
     }
 
 
@@ -45,6 +55,11 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
 
         //draw valid moves
         drawValidMoves( g );
+
+        //draw buttons
+        drawButtons( g );
+
+        //display winner
     }
     private void drawValidMoves ( Graphics g ) {
         for(Point p: validMoves)
@@ -72,19 +87,35 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
         }
     }
     private void drawBackground ( Graphics g ) {
-        byte[][] emptyFields = LevelBuild.emptyFields ( );
+        g.setColor ( new Color ( 138, 219, 181 ) );
+        g.fillRect ( 0, 0, 640, 704 );
+
+        g.setColor ( new Color ( 87, 196, 97 ) );
+        for(byte y=0; y<8; y++)
+            for(byte x=0; x<8; x++)
+                if((y+x)%2 == 0)
+                    g.fillRect ( 64*(y+1), 64*(x+2), 64, 64 );
+
+        g.setColor ( new Color ( 45, 161, 84 ) );
+        for(byte y=0; y<8; y++)
+            for(byte x=0; x<8; x++)
+                if((y+x)%2 != 0)
+                    g.fillRect ( 64*(x+1), 64*(y+2), 64, 64 );
+
+        g.drawRect ( 64, 128, 512, 512 );
+        g.drawRect ( 65, 129, 510, 510 );
+        g.drawRect ( 66, 130, 508, 508 );
+
         byte[][] numbersAndLetters = LevelBuild.numbersAndLetters ();
-
-        for(byte i=0; i<emptyFields.length; i++)
-            for(byte j=0; j<emptyFields[0].length; j++)
-                g.drawImage ( tileManager.getSprite ( emptyFields[i][j] ), 64*j, 64*i, null );
-
-        for(byte i=0; i< numbersAndLetters.length; i++)
-            for(byte j=0; j< numbersAndLetters[0].length; j++)
+        for(byte i=0; i < numbersAndLetters.length; i++)
+            for(byte j=0; j < numbersAndLetters[0].length; j++)
                 if(numbersAndLetters[i][j]>=0)
                     g.drawImage ( tileManager.getSprite ( numbersAndLetters[i][j] ), 64*j, 64*i, null );
     }
-
+    private void drawButtons( Graphics g ){
+        bMenu.draw ( g );
+        bReset.draw ( g );
+    }
 
 
     private void setValidMovesAndActivePiece ( byte row, byte col, byte opponentPiece, byte playersPiece ) {
@@ -116,11 +147,24 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
                 winner = T;
             }
     }
+    private void resetGame () {
+        piecesPositions = LevelBuild.getInitialPiecesPositions ();
+        turn = BLACK_TURN;
+        gameWon = false;
+        winner = -1;
+    }
 
 
 
+    //TODO if gameWon then the notification should be displayed on the screen, not on the console
     @Override
     public void mouseClicked ( int x, int y ) {
+        if(bMenu.getBounds ().contains ( x, y )){
+            SetGameState(MENU);
+        }else if (bReset.getBounds ().contains ( x, y )){
+            resetGame();
+        }
+        //make this a rectangle that displays the winner
         if(gameWon) {
             if(winner == W)
                 System.out.println ( "Game already won by: WHITE" );
@@ -171,6 +215,7 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
                     resetValidMovesAndActivePiece ();
             }
         }
+
     }
 
 
@@ -373,17 +418,11 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
     private byte getRow ( int y ) {
         return (byte)(y/64-2);
     }
-    public static void resetPiecesPositions(){
-        piecesPositions = new byte[][]{
-                {E, B, B, B, B, B, B, E},
-                {W, E, E, E, E, E, E, W},
-                {W, E, E, E, E, E, E, W},
-                {W, E, E, E, E, E, E, W},
-                {W, E, E, E, E, E, E, W},
-                {W, E, E, E, E, E, E, W},
-                {W, E, E, E, E, E, E, W},
-                {E, B, B, B, B, B, B, E}
-        };
+    public static void setUpInitialGameState(){
+        piecesPositions = LevelBuild.getInitialPiecesPositions ();
+        turn = BLACK_TURN;
+        gameWon = false;
+        winner = -1;
     }
     public void resetPositionsVisited(){
         positionsVisited = new boolean[][]{
@@ -409,15 +448,30 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
 
     @Override
     public void mouseMoved ( int x, int y ) {
+        bMenu.setMouseOver ( false );
+        bReset.setMouseOver ( false );
 
+        if(bMenu.getBounds ().contains ( x, y ))
+            bMenu.setMouseOver ( true );
+        else if (bReset.getBounds ().contains ( x, y )) {
+            bReset.setMouseOver ( true );
+        }
     }
     @Override
     public void mousePressed ( int x, int y ) {
-
+        if(bMenu.getBounds ().contains ( x, y ))
+            bMenu.setMousePressed ( true );
+        else if (bReset.getBounds ().contains ( x, y )) {
+            bReset.setMousePressed ( true );
+        }
     }
     @Override
     public void mouseReleased ( int x, int y ) {
-
+        resetButtons();
+    }
+    private void resetButtons(){
+        bMenu.resetBooleans ();
+        bReset.resetBooleans ();
     }
 }
 

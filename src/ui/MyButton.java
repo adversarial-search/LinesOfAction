@@ -33,19 +33,19 @@ public class MyButton {
     }
 
     private void drawBorder ( Graphics g ) {
-        g.setColor ( Color.BLACK );
+        g.setColor ( new Color ( 88, 69, 47 ) );
         g.drawRect ( x, y, width, height );
+        g.drawRect ( x+1, y+1, width-2, height-2 );
         if(mousePressed){
-            g.drawRect ( x+1, y+1, width-2, height-2 );
             g.drawRect ( x+2, y+2, width-4, height-4 );
         }
     }
 
     private void drawBody ( Graphics g ) {
         if(mouseOver)
-            g.setColor ( Color.GRAY );
+            g.setColor ( new Color ( 192, 154, 111 ) );
         else
-            g.setColor ( Color.WHITE );
+            g.setColor ( new Color ( 168, 212, 190 ) );
         g.fillRect ( x, y, width, height );
     }
 
