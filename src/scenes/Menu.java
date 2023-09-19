@@ -15,6 +15,18 @@ public class Menu extends GameScene implements SceneMethods{
         initButtons();
     }
 
+    @Override
+    protected void resetGame () {
+    }
+    @Override
+    protected void changeTurn () {
+    }
+
+    @Override
+    protected void makeMove ( int x, int y ) {
+
+    }
+
 
     private void initButtons () {
         int w = 246;
@@ -31,15 +43,19 @@ public class Menu extends GameScene implements SceneMethods{
 
     @Override
     public void render ( Graphics g ) {
-        for(int y=0; y<11; y++){
-            for(int x=0; x<10; x++)
-                if ((x + y) % 2 == 0)
-                    g.drawImage ( tileManager.getSprite ( 6 ), 64 * x, 64 * y, null );
-                else
-                    g.drawImage ( tileManager.getSprite ( 7 ), 64 * x, 64 * y, null );
+        g.setColor ( new Color ( 87, 196, 97 ) );
+        for(byte y=0; y<10; y++)
+            for(byte x=0; x<11; x++)
+                if((y+x)%2 == 0)
+                    g.fillRect ( 64*y, 64*x, 64, 64 );
 
-        }
-        drawButtons(g);
+        g.setColor ( new Color ( 45, 161, 84 ) );
+        for(byte y=0; y<10; y++)
+            for(byte x=0; x<11; x++)
+                if((y+x)%2 != 0)
+                    g.fillRect ( 64*y, 64*x, 64, 64 );
+
+        drawButtons( g );
     }
 
     @Override
@@ -47,6 +63,7 @@ public class Menu extends GameScene implements SceneMethods{
         if(bPlayingAgainstAI.getBounds ().contains ( x, y )){
             SetGameState(PLAYING_AGAINST_AI);
         } else if (bPlayingAgainstPerson.getBounds ().contains ( x, y )) {
+            PlayingAgainstPerson.setUpInitialGameState ();
             SetGameState ( PLAYING_AGAINST_PERSON );
         } else if (bAIAgainstAI.getBounds ().contains ( x, y )) {
             SetGameState ( AI_AGAINST_AI );

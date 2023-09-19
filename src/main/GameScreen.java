@@ -25,7 +25,7 @@ public class GameScreen extends JPanel {
 
         requestFocus ();
     }
-    public void paintComponent( Graphics g){
+    public void paintComponent( Graphics g ){
         super.paintComponent ( g );
 
         game.getRender ().render ( g );
