@@ -31,6 +31,7 @@ public abstract class GameScene {
     protected void setValidMovesAndActivePiece ( byte row, byte col, byte opponentPiece, byte playersPiece ) {
         validMoves = getValidMoves ( row, col, opponentPiece, playersPiece );
         activePiece = new Point ( row, col );
+        validMovesForPiece().forEach(System.out::println);
     }
     protected void resetValidMovesAndActivePiece ( ) {
         validMoves = new ArrayList<> (  );
@@ -275,6 +276,26 @@ public abstract class GameScene {
     }
     protected byte getRow ( int y ) {
         return (byte)(y/64-2);
+    }
+
+    protected String positionTranslator(Point pointToTranslate){
+        String  returnString="";
+        byte row = pointToTranslate.getRow();
+        byte column = pointToTranslate.getCol();
+        returnString+=((char)(column + 'a'));
+        returnString+=(8-row);
+        return returnString;
+    }
+    protected ArrayList<String> validMovesForPiece(){
+        ArrayList<String> returnArray = new ArrayList<>();
+        validMoves.forEach(point -> {
+            String toAdd = positionTranslator(activePiece);
+            toAdd+="->";
+            toAdd+=positionTranslator(point);
+            returnArray.add(toAdd);
+        });
+        return returnArray;
+
     }
 
 

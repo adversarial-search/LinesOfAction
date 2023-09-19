@@ -102,7 +102,6 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
 
 
 
-    //TODO if gameWon then the notification should be displayed on the screen, not on the console
     @Override
     public void mouseClicked ( int x, int y ) {
         checkMenuAndResetClicked( x, y );
