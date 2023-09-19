@@ -11,7 +11,7 @@ import static main.GameStates.*;
 
 public class PlayingAgainstPerson extends GameScene implements SceneMethods{
     Game game;
-    private MyButton bMenu, bReset;
+    private MyButton bMenu, bReset,bWinnerDisplay;
 
 
     public PlayingAgainstPerson ( Game game) {
@@ -75,10 +75,12 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
     private void drawButtons( Graphics g ){
         bMenu.draw ( g );
         bReset.draw ( g );
+        bWinnerDisplay.draw(g);
     }
     private void initButtons () {
         bMenu = new MyButton ( "Menu", 14, 12, 100, 40 );
         bReset = new MyButton ( "Reset", 128, 12, 100, 40 );
+        bWinnerDisplay = new MyButton("",0,0,0,0);
     }
 
 
@@ -104,7 +106,11 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods{
     @Override
     public void mouseClicked ( int x, int y ) {
         checkMenuAndResetClicked( x, y );
-        if(gameWon) return;
+        if(gameWon) {
+            String winnerString = (winner==0?"White":"Black");
+            bWinnerDisplay = new MyButton ( winnerString+" wins!", 444, 12, 180, 40 );
+            return;
+        }
         makeMove( x, y );
     }
     @Override
