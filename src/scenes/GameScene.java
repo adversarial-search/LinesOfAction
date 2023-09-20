@@ -359,11 +359,8 @@ public abstract class GameScene {
             g.setColor ( new Color ( 88, 69, 47 ) );
             g.drawRect ( 340, 12, 100, 40 );
             g.drawRect ( 341, 13, 98, 38 );
-            if(winner == W){
-                g.drawString ( "Winner: White", 356, 38 );
-            }else{
-                g.drawString ( "Winner: Black", 356, 38 );
-            }
+            if(winner == W) g.drawString ( "Winner: White", 356, 38 );
+            else g.drawString ( "Winner: Black", 356, 38 );
         }
     }
 

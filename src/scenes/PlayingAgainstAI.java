@@ -18,6 +18,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods{
     private Random random;
 
 
+
     public PlayingAgainstAI ( Game game) {
         super( game );
         this.game = game;
@@ -61,6 +62,8 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods{
             //draw buttons
             drawButtons ( g );
 
+            //display winner
+            displayWinner ( g );
             if(turn == aiID) makeAiMove ();
         }
         else{
@@ -106,7 +109,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods{
         else turn = BLACK_TURN;
         resetValidMovesAndActivePiece ();
     }
-    //TODO check winning conditions again and their implementation
+
     @Override
     protected void makeMove ( int x, int y ) {
         if( turn == playerID ){
@@ -117,7 +120,9 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods{
         }
     }
 
+    //TODO implement minimax
     private void makeAiMove () {
+
         ArrayList<byte[][]> immediateStates = getAllImmediateStates();
         int chooseState = random.nextInt (immediateStates.size ());
         piecesPositions = immediateStates.get ( chooseState );
@@ -174,6 +179,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods{
 
 
         //game logic
+        if(gameWon) return ;
         makeMove ( x, y );
     }
     @Override
