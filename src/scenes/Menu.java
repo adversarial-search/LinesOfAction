@@ -1,33 +1,19 @@
 package scenes;
 
 import main.Game;
-import managers.TileManager;
 import ui.MyButton;
-import java.awt.*;
+import java.awt.Graphics;
 import static main.GameStates.*;
 
 public class Menu extends GameScene implements SceneMethods{
     private MyButton bPlayingAgainstAI, bPlayingAgainstPerson, bAIAgainstAI, bQuit;
-    TileManager tileManager = new TileManager ();
+
+
 
     public Menu (Game game) {
         super(game);
         initButtons();
     }
-
-    @Override
-    protected void resetGame () {
-    }
-    @Override
-    protected void changeTurn () {
-    }
-
-    @Override
-    protected void makeMove ( int x, int y ) {
-
-    }
-
-
     private void initButtons () {
         int w = 246;
         int h = 54;
@@ -41,26 +27,21 @@ public class Menu extends GameScene implements SceneMethods{
         bQuit = new MyButton ( "Quit", x+64, y + 3*yOffset, w/2, h );
     }
 
+
+
     @Override
     public void render ( Graphics g ) {
-        g.setColor ( new Color ( 87, 196, 97 ) );
-        for(byte y=0; y<10; y++)
-            for(byte x=0; x<11; x++)
-                if((y+x)%2 == 0)
-                    g.fillRect ( 64*y, 64*x, 64, 64 );
-
-        g.setColor ( new Color ( 45, 161, 84 ) );
-        for(byte y=0; y<10; y++)
-            for(byte x=0; x<11; x++)
-                if((y+x)%2 != 0)
-                    g.fillRect ( 64*y, 64*x, 64, 64 );
+        drawMenuBackground ( g );
 
         drawButtons( g );
     }
 
+
+
     @Override
     public void mouseClicked ( int x, int y ) {
         if(bPlayingAgainstAI.getBounds ().contains ( x, y )){
+            PlayingAgainstAI.setUpInitialGameState ();
             SetGameState(PLAYING_AGAINST_AI);
         } else if (bPlayingAgainstPerson.getBounds ().contains ( x, y )) {
             PlayingAgainstPerson.setUpInitialGameState ();
@@ -100,7 +81,6 @@ public class Menu extends GameScene implements SceneMethods{
             bQuit.setMousePressed(true);
         }
     }
-
     @Override
     public void mouseReleased ( int x, int y ) {
         resetButtons();
@@ -116,5 +96,18 @@ public class Menu extends GameScene implements SceneMethods{
         bPlayingAgainstPerson.draw ( g );
         bAIAgainstAI.draw ( g );
         bQuit.draw ( g );
+    }
+
+
+
+    @Override
+    protected void resetGame () {
+    }
+    @Override
+    protected void changeTurn () {
+    }
+    @Override
+    protected void makeMove ( int x, int y ) {
+
     }
 }

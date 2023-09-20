@@ -1,12 +1,15 @@
 package scenes;
 
+import assistants.LevelBuild;
 import main.Game;
 import managers.TileManager;
 import objects.Point;
 
+import java.awt.*;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Queue;
+import java.util.stream.Collectors;
 
 public abstract class GameScene {
     protected static final byte WHITE_TURN = 0, BLACK_TURN = 1, W = 0, B = 1, E = 2;
@@ -16,7 +19,7 @@ public abstract class GameScene {
     protected static byte[][] piecesPositions;
     protected ArrayList<Point> validMoves = new ArrayList<> (  );
     protected Point activePiece = null;
-    protected static byte turn;
+    protected static byte turn = B;
 
 
     protected static boolean gameWon;
@@ -28,15 +31,18 @@ public abstract class GameScene {
         this.game = game;
     }
 
+
+
     protected void setValidMovesAndActivePiece ( byte row, byte col, byte opponentPiece, byte playersPiece ) {
         validMoves = getValidMoves ( row, col, opponentPiece, playersPiece );
         activePiece = new Point ( row, col );
-        validMovesForPiece().forEach(System.out::println);
+        validMovesStr ().forEach ( System.out::println );
     }
     protected void resetValidMovesAndActivePiece ( ) {
         validMoves = new ArrayList<> (  );
         activePiece = null;
     }
+
 
 
     protected void makePlayerMove ( byte playerColor, byte opponentColor, byte row, byte col ) {
@@ -202,6 +208,7 @@ public abstract class GameScene {
     }
 
 
+
     protected void checkWinningConditions ( ) {
         if(turn == WHITE_TURN){
             wins(W);
@@ -220,6 +227,28 @@ public abstract class GameScene {
     }
 
 
+
+    protected String positionTranslator(Point pointToTranslate){
+        String returnString = "";
+        byte row = pointToTranslate.getRow ();
+        byte col = pointToTranslate.getCol ();
+        returnString += (char)(col+'a');
+        returnString += (8-row);
+        return returnString;
+    }
+    protected ArrayList<String> validMovesStr(){
+        ArrayList<String> returnArray = new ArrayList<>();
+        validMoves.forEach(point -> {
+            String toAdd = positionTranslator(activePiece);
+            toAdd+="->";
+            toAdd+=positionTranslator(point);
+            returnArray.add(toAdd);
+        });
+        return returnArray;
+    }
+
+
+
     protected Point getFirstPiece ( byte color) {
         for(byte i=0; i<8; i++)
             for(byte j=0; j<8; j++)
@@ -232,6 +261,7 @@ public abstract class GameScene {
             return piecesPositions[row][col] == color;
         return false;
     }
+
 
 
     protected boolean allPiecesConnected ( byte color, Point startingPiece ) {
@@ -271,6 +301,7 @@ public abstract class GameScene {
     }
 
 
+
     protected byte getCol( int x ){
         return (byte)(x/64-1);
     }
@@ -278,25 +309,64 @@ public abstract class GameScene {
         return (byte)(y/64-2);
     }
 
-    protected String positionTranslator(Point pointToTranslate){
-        String  returnString="";
-        byte row = pointToTranslate.getRow();
-        byte column = pointToTranslate.getCol();
-        returnString+=((char)(column + 'a'));
-        returnString+=(8-row);
-        return returnString;
-    }
-    protected ArrayList<String> validMovesForPiece(){
-        ArrayList<String> returnArray = new ArrayList<>();
-        validMoves.forEach(point -> {
-            String toAdd = positionTranslator(activePiece);
-            toAdd+="->";
-            toAdd+=positionTranslator(point);
-            returnArray.add(toAdd);
-        });
-        return returnArray;
 
+
+    protected void drawPieces ( Graphics g ) {
+        for(byte i=0; i<piecesPositions.length; i++){
+            for(byte j=0; j<piecesPositions[0].length; j++){
+                if(piecesPositions[i][j] == W)
+                    g.drawImage ( tileManager.getSprite ( piecesPositions[i][j] ), 64*(j+1), 64*(i+2), null );
+                else if (piecesPositions[i][j] == B)
+                    g.drawImage ( tileManager.getSprite ( piecesPositions[i][j]+1 ), 64*(j+1), 64*(i+2), null );
+            }
+        }
     }
+    protected void drawValidMoves ( Graphics g ) {
+        for(Point p: validMoves)
+            g.drawImage ( tileManager.getSprite ( 4 ), 64*(p.getCol ()+1), 64*(p.getRow ()+2), null );
+    }
+    protected void drawActive ( Graphics g ) {
+        if(activePiece != null){
+            byte row = (byte)(activePiece.getRow ()+2);
+            byte col = (byte)(activePiece.getCol ()+1);
+
+            if(turn == W)
+                g.drawImage ( tileManager.getSprite ( 1 ), 64 * col, 64 * row, null);
+            else if (turn == B)
+                g.drawImage ( tileManager.getSprite ( 3 ), 64 * col, 64 * row, null);
+        }
+    }
+    protected void drawMenuBackground( Graphics g ){
+        g.setColor ( new Color ( 87, 196, 97 ) );
+        for(byte y=0; y<10; y++)
+            for(byte x=0; x<11; x++)
+                if((y+x)%2 == 0)
+                    g.fillRect ( 64*y, 64*x, 64, 64 );
+
+        g.setColor ( new Color ( 45, 161, 84 ) );
+        for(byte y=0; y<10; y++)
+            for(byte x=0; x<11; x++)
+                if((y+x)%2 != 0)
+                    g.fillRect ( 64*y, 64*x, 64, 64 );
+    }
+    protected void drawBoardBackground ( Graphics g ) {
+        LevelBuild.drawBackground ( g );
+    }
+    protected void displayWinner ( Graphics g ) {
+        if(gameWon){
+            g.setColor ( new Color ( 168, 212, 190 ) );
+            g.fillRect ( 340, 12, 100, 40 );
+            g.setColor ( new Color ( 88, 69, 47 ) );
+            g.drawRect ( 340, 12, 100, 40 );
+            g.drawRect ( 341, 13, 98, 38 );
+            if(winner == W){
+                g.drawString ( "Winner: White", 356, 38 );
+            }else{
+                g.drawString ( "Winner: Black", 356, 38 );
+            }
+        }
+    }
+
 
 
     protected abstract void resetGame ( );
