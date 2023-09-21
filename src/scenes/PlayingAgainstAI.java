@@ -110,6 +110,8 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods{
         resetValidMovesAndActivePiece ();
     }
 
+
+
     @Override
     protected void makeMove ( int x, int y ) {
         if( turn == playerID ){
@@ -119,42 +121,95 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods{
             makePlayerMove ( playerID, aiID, row, col );
         }
     }
-
-    //TODO implement minimax
+    //  TODO fix array clone
+    private static byte MAX_DEPTH = 3;
+    ArrayList<Long> differences = new ArrayList<> (  );
+    private int functionCalls;
     private void makeAiMove () {
 
-        ArrayList<byte[][]> immediateStates = getAllImmediateStates();
-        int chooseState = random.nextInt (immediateStates.size ());
-        piecesPositions = immediateStates.get ( chooseState );
+        long startTime = System.currentTimeMillis ();
+        System.out.println ( "Start calculation: " + startTime );
+        functionCalls = 0;
+
+        // BLACK == MAX
+        // WHITE == MIN
+
+        byte[][] bestState = new byte[8][8];
+        ArrayList<byte[][]> immediateStates = getAllImmediateStates ( piecesPositions );
+
+
+        short bestStateScore = turn == B ? Short.MIN_VALUE : Short.MAX_VALUE;
+        for(byte[][] state: immediateStates){
+            short stateScore = miniMax(state, MAX_DEPTH, turn == B);
+            if( turn == B ? stateScore > bestStateScore : stateScore < bestStateScore ) {
+                for (byte k = 0; k < 8; k++)
+                    bestState[k] = state[k].clone ( );
+                bestStateScore = stateScore;
+            }
+        }
+
+        piecesPositions = bestState;
         turn = playerID;
+
+        long endTime = System.currentTimeMillis ();
+        differences.add ( endTime-startTime );
+
+        System.out.println ( "End calculation: " + endTime );
+        System.out.println ( "Time taken: " + (endTime-startTime) );
+        System.out.println ( "Function calls: " + functionCalls );
     }
-    private ArrayList<byte[][]> getAllImmediateStates () {
+    private short miniMax(byte[][] state, byte depth, boolean isMax){
+        short stateScore = evaluateState(state, isMax);
+
+        if( depth == 0 || stateScore == Math.abs(Short.MAX_VALUE) || getAllImmediateStates (state).isEmpty ())
+            return stateScore;
+
+        short bestScore = isMax ? Short.MIN_VALUE : Short.MAX_VALUE;
+        ArrayList<byte[][]> immediateStates = getAllImmediateStates ( state );
+        for(byte[][] immediateState: immediateStates)
+            if(isMax)
+                bestScore = (short)Math.max ( bestScore, miniMax ( immediateState, (byte)(depth - 1), false ) );
+            else
+                bestScore = (short)Math.min ( bestScore, miniMax ( immediateState, (byte)(depth - 1), true ) );
+        return bestScore;
+    }
+    private short evaluateState(byte[][] state, boolean isMax){
+        functionCalls++;
+        byte countPieces = 0;
+        for(byte y = 0; y < 8; y++)
+            for(byte x = 0; x < 8; x++) {
+                if (isMax && state[y][x] == B) countPieces++;
+                else if (!isMax && state[y][x] == W) countPieces++;
+            }
+        return isMax ? (short)(12-countPieces) : (short)(countPieces-12);
+    }
+    private ArrayList<byte[][]> getAllImmediateStates (byte[][] state) {
         ArrayList<byte[][]> states = new ArrayList<> (  );
         for(byte y = 0; y < 8; y++){
             for(byte x = 0; x < 8; x++){
-                if(piecesPositions[y][x] == aiID){
-                    states.addAll ( getAllImmediateStatesFor(y, x) );
+                if(state[y][x] == aiID){
+                    states.addAll ( getAllImmediateStatesFor(state, y, x) );
                 }
             }
         }
 
         return states;
     }
-    private ArrayList<byte[][]> getAllImmediateStatesFor ( byte row, byte col ) {
-        ArrayList<Point> validPositions = getValidMoves ( row, col, playerID, aiID );
+    private ArrayList<byte[][]> getAllImmediateStatesFor ( byte[][] state, byte row, byte col ) {
+        ArrayList<Point> validPositions = getValidMoves ( state, row, col, playerID, aiID );
         ArrayList<byte[][]> immediateStates = new ArrayList<> (  );
         for(Point p: validPositions){
-            //TODO find a more efficient way or do it with System.arraycopy
-            byte[][] state = new byte[8][];
+            byte[][] nextState = new byte[8][];
             for(byte i = 0; i < 8; i++)
-                state[i] = piecesPositions[i].clone ();
+                nextState[i] = piecesPositions[i].clone ();
 
-            state[row][col] = E;
-            state[p.getRow ()][p.getCol ()] = aiID;
-            immediateStates.add ( state );
+            nextState[row][col] = E;
+            nextState[p.getRow ()][p.getCol ()] = aiID;
+            immediateStates.add ( nextState );
         }
         return immediateStates;
     }
+
 
 
     @Override
@@ -179,7 +234,11 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods{
 
 
         //game logic
-        if(gameWon) return ;
+        if(gameWon) {
+            for(Long time: differences)
+                System.out.println ( time );
+            return ;
+        }
         makeMove ( x, y );
     }
     @Override

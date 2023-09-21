@@ -4,14 +4,13 @@ import scenes.AIAgainstAI;
 import scenes.Menu;
 import scenes.PlayingAgainstAI;
 import scenes.PlayingAgainstPerson;
-
 import javax.swing.JFrame;
 
 public class Game extends JFrame implements Runnable {
     private GameScreen gameScreen;
     private Thread gameThread;
 
-    private final double FPS_SET = 60.0;
+    private final double FPS_SET = 30.0;
     private final double UPS_SET = 60.0;
 
     //Classes
