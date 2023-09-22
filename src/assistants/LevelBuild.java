@@ -9,6 +9,17 @@ public class LevelBuild {
     private static final byte W = 0;
     private static final byte B = 1;
     private static final byte E = 2;
+    public static final byte[][] positionsScore = {
+            {-80, -25, -20, -20, -20, -20, -25, -80 },
+            {-25,  10,  10,  10,  10,  10,  10,  -25},
+            {-20,  10,  25,  25,  25,  25,  10,  -20},
+            {-20,  10,  25,  25,  25,  25,  10,  -20},
+            {-20,  10,  25,  50,  50,  25,  10,  -20},
+            {-20,  10,  25,  25,  25,  25,  10,  -20},
+            {-25,  10,  10,  10,  10,  10,  10,  -25},
+            {-80, -25, -20, -20, -20, -20, -25, -80}
+    };
+
     private static final TileManager tileManager = new TileManager ();
     public static void drawBackground( Graphics g){
         g.setColor ( new Color ( 138, 219, 181 ) );

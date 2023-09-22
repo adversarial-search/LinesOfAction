@@ -122,26 +122,30 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods{
         }
     }
     //  TODO fix array clone
-    private static byte MAX_DEPTH = 3;
+    private static byte MAX_DEPTH = 1;
     ArrayList<Long> differences = new ArrayList<> (  );
     private int functionCalls;
     private void makeAiMove () {
-
-        long startTime = System.currentTimeMillis ();
-        System.out.println ( "Start calculation: " + startTime );
-        functionCalls = 0;
-
-        // BLACK == MAX
-        // WHITE == MIN
-
         byte[][] bestState = new byte[8][8];
         ArrayList<byte[][]> immediateStates = getAllImmediateStates ( piecesPositions );
 
 
-        short bestStateScore = turn == B ? Short.MIN_VALUE : Short.MAX_VALUE;
+        short bestStateScore = Short.MAX_VALUE;
         for(byte[][] state: immediateStates){
-            short stateScore = miniMax(state, MAX_DEPTH, turn == B);
-            if( turn == B ? stateScore > bestStateScore : stateScore < bestStateScore ) {
+            short stateScore = miniMax(state, MAX_DEPTH, true);
+            System.out.println ( "State score: " + stateScore );
+            for(int i=0; i<8; i++) {
+                for (int j = 0; j < 8; j++) {
+                    if (state[i][j] == W)
+                        System.out.print ( "W " );
+                    else if(state[i][j] == B)
+                        System.out.print ( "B " );
+                    else System.out.print ( "E " );
+                }
+                System.out.println ( );
+            }
+            System.out.println ( );System.out.println ( );
+            if( stateScore < bestStateScore ) {
                 for (byte k = 0; k < 8; k++)
                     bestState[k] = state[k].clone ( );
                 bestStateScore = stateScore;
@@ -150,13 +154,6 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods{
 
         piecesPositions = bestState;
         turn = playerID;
-
-        long endTime = System.currentTimeMillis ();
-        differences.add ( endTime-startTime );
-
-        System.out.println ( "End calculation: " + endTime );
-        System.out.println ( "Time taken: " + (endTime-startTime) );
-        System.out.println ( "Function calls: " + functionCalls );
     }
     private short miniMax(byte[][] state, byte depth, boolean isMax){
         short stateScore = evaluateState(state, isMax);
@@ -175,13 +172,23 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods{
     }
     private short evaluateState(byte[][] state, boolean isMax){
         functionCalls++;
-        byte countPieces = 0;
-        for(byte y = 0; y < 8; y++)
-            for(byte x = 0; x < 8; x++) {
-                if (isMax && state[y][x] == B) countPieces++;
-                else if (!isMax && state[y][x] == W) countPieces++;
-            }
-        return isMax ? (short)(12-countPieces) : (short)(countPieces-12);
+        short totalScore = 0;
+        totalScore += piecesPositionsScore(state, isMax);
+        return isMax ? (totalScore) : (short)((-1)*totalScore);
+    }
+    private short piecesPositionsScore(byte[][] state, boolean isMax){
+        short localScore = 0;
+        if(isMax) {
+            for (byte y = 0; y < 8; y++)
+                for (byte x = 0; x < 8; x++)
+                    if (state[y][x] == B) localScore += LevelBuild.positionsScore[y][x];
+        }
+        else {
+            for (byte y = 0; y < 8; y++)
+                for (byte x = 0; x < 8; x++)
+                    if (state[y][x] == W) localScore += LevelBuild.positionsScore[y][x];
+        }
+        return localScore;
     }
     private ArrayList<byte[][]> getAllImmediateStates (byte[][] state) {
         ArrayList<byte[][]> states = new ArrayList<> (  );
