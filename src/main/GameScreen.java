@@ -2,39 +2,42 @@ package main;
 
 import inputs.MyMouseListener;
 
-import javax.swing.JPanel;
+import javax.swing.*;
 import java.awt.*;
 
 
 public class GameScreen extends JPanel {
-    private Game game;
+    private final Game game;
     private Dimension size;
     private MyMouseListener myMouseListener;
 
-    public GameScreen ( Game game ) {
+    public GameScreen(Game game) {
         this.game = game;
 
         setPanelSize();
 
     }
-    public void initInputs(){
-        myMouseListener = new MyMouseListener (game);
 
-        addMouseListener ( myMouseListener );
-        addMouseMotionListener ( myMouseListener );
+    public void initInputs() {
+        myMouseListener = new MyMouseListener(game);
 
-        requestFocus ();
+        addMouseListener(myMouseListener);
+        addMouseMotionListener(myMouseListener);
+
+        requestFocus();
     }
-    public void paintComponent( Graphics g ){
-        super.paintComponent ( g );
 
-        game.getRender ().render ( g );
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+
+        game.getRender().render(g);
     }
-    private void setPanelSize () {
-        size = new Dimension ( 640, 704 );
 
-        setMinimumSize ( size );
-        setPreferredSize ( size );
-        setMaximumSize ( size );
+    private void setPanelSize() {
+        size = new Dimension(640, 704);
+
+        setMinimumSize(size);
+        setPreferredSize(size);
+        setMaximumSize(size);
     }
 }

@@ -10,9 +10,9 @@ import java.util.ArrayList;
 
 public class TileManager {
     public BufferedImage atlas;
-    public ArrayList<Tile> tiles = new ArrayList<> (  );
+    public ArrayList<Tile> tiles = new ArrayList<>();
 
-    public TileManager () {
+    public TileManager() {
 
         loadAtlas();
         createTiles();
@@ -20,24 +20,27 @@ public class TileManager {
     }
 
 
-    private void createTiles () {
-        for(int y=0; y<3; y++)
-            for(int x=0; x<8; x++)
-                tiles.add ( new Tile(getSprite ( x, y )) );
+    private void createTiles() {
+        for (int y = 0; y < 3; y++)
+            for (int x = 0; x < 8; x++)
+                tiles.add(new Tile(getSprite(x, y)));
     }
-    private void loadAtlas () {
-        InputStream is =  getClass ().getResourceAsStream ( "/spriteAtlas.png" );
+
+    private void loadAtlas() {
+        InputStream is = getClass().getResourceAsStream("/spriteAtlas.png");
 
         try {
-            atlas = ImageIO.read ( is );
+            atlas = ImageIO.read(is);
         } catch (IOException e) {
-            throw new RuntimeException ( e );
+            throw new RuntimeException(e);
         }
     }
-    private BufferedImage getSprite(int xCord, int yCord){
-        return atlas.getSubimage ( 64*xCord, 64*yCord, 64, 64 );
+
+    private BufferedImage getSprite(int xCord, int yCord) {
+        return atlas.getSubimage(64 * xCord, 64 * yCord, 64, 64);
     }
-    public BufferedImage getSprite(int id){
-        return tiles.get ( id ).getSprite ();
+
+    public BufferedImage getSprite(int id) {
+        return tiles.get(id).getSprite();
     }
 }
