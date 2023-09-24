@@ -6,7 +6,9 @@ import objects.Point;
 import ui.MyButton;
 import java.awt.Graphics;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 import static main.GameStates.*;
 
@@ -122,96 +124,109 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods{
         }
     }
     //  TODO fix array clone
-    private static byte MAX_DEPTH = 1;
+    private static final byte MAX_DEPTH =5;
     ArrayList<Long> differences = new ArrayList<> (  );
     private int functionCalls;
     private void makeAiMove () {
+
         byte[][] bestState = new byte[8][8];
-        ArrayList<byte[][]> immediateStates = getAllImmediateStates ( piecesPositions );
 
 
-        short bestStateScore = Short.MAX_VALUE;
-        for(byte[][] state: immediateStates){
-            short stateScore = miniMax(state, MAX_DEPTH, true);
-            System.out.println ( "State score: " + stateScore );
-            for(int i=0; i<8; i++) {
-                for (int j = 0; j < 8; j++) {
-                    if (state[i][j] == W)
-                        System.out.print ( "W " );
-                    else if(state[i][j] == B)
-                        System.out.print ( "B " );
-                    else System.out.print ( "E " );
+
+        if(aiID==W) {
+            short bestScore = Short.MAX_VALUE;
+            List<byte[][]> immediateStates = getAllImmediateStates(piecesPositions, false);
+
+            for (byte[][] state : immediateStates) {
+                short moveScore = miniMax(state, MAX_DEPTH, true, true);
+                if (moveScore < bestScore) {
+                    bestState = state;
+                    bestScore = moveScore;
                 }
-                System.out.println ( );
             }
-            System.out.println ( );System.out.println ( );
-            if( stateScore < bestStateScore ) {
-                for (byte k = 0; k < 8; k++)
-                    bestState[k] = state[k].clone ( );
-                bestStateScore = stateScore;
+        }else{
+            short bestScore = Short.MIN_VALUE;
+            List<byte[][]> immediateStates = getAllImmediateStates(piecesPositions, true);
+            for (byte[][] state : immediateStates) {
+                short moveScore = miniMax(state, MAX_DEPTH, false, false);
+                if (moveScore > bestScore) {
+                    bestState = state;
+                    bestScore = moveScore;
+                }
             }
         }
+
 
         piecesPositions = bestState;
         turn = playerID;
     }
-    private short miniMax(byte[][] state, byte depth, boolean isMax){
-        short stateScore = evaluateState(state, isMax);
+    private short miniMax(byte[][] state, byte depth, boolean isMax, boolean isBlackTurn){
+        short stateScore = evaluateState(state, !isBlackTurn);
+        if(depth == 0) return stateScore;
 
-        if( depth == 0 || stateScore == Math.abs(Short.MAX_VALUE) || getAllImmediateStates (state).isEmpty ())
-            return stateScore;
+        List<byte[][]> immediateStates = getAllImmediateStates(state, isBlackTurn);
+        if(immediateStates.isEmpty()) return stateScore;
 
-        short bestScore = isMax ? Short.MIN_VALUE : Short.MAX_VALUE;
-        ArrayList<byte[][]> immediateStates = getAllImmediateStates ( state );
-        for(byte[][] immediateState: immediateStates)
-            if(isMax)
-                bestScore = (short)Math.max ( bestScore, miniMax ( immediateState, (byte)(depth - 1), false ) );
-            else
-                bestScore = (short)Math.min ( bestScore, miniMax ( immediateState, (byte)(depth - 1), true ) );
-        return bestScore;
-    }
-    private short evaluateState(byte[][] state, boolean isMax){
-        functionCalls++;
-        short totalScore = 0;
-        totalScore += piecesPositionsScore(state, isMax);
-        return isMax ? (totalScore) : (short)((-1)*totalScore);
-    }
-    private short piecesPositionsScore(byte[][] state, boolean isMax){
-        short localScore = 0;
-        if(isMax) {
-            for (byte y = 0; y < 8; y++)
-                for (byte x = 0; x < 8; x++)
-                    if (state[y][x] == B) localScore += LevelBuild.positionsScore[y][x];
+        if(isMax){ // this is a maximising node
+            short highestScore = Short.MIN_VALUE;
+            for(byte[][] immediateState: immediateStates)
+                highestScore = (short)Math.max(highestScore, miniMax(immediateState, (byte)(depth-1), false, !isBlackTurn));
+            return highestScore;
+        }else{
+            short lowestScore = Short.MAX_VALUE;
+            for(byte[][] immediateState: immediateStates)
+                lowestScore = (short)Math.min(lowestScore, miniMax(immediateState, (byte)(depth-1), true, !isBlackTurn));
+            return lowestScore;
         }
-        else {
-            for (byte y = 0; y < 8; y++)
-                for (byte x = 0; x < 8; x++)
-                    if (state[y][x] == W) localScore += LevelBuild.positionsScore[y][x];
-        }
-        return localScore;
     }
-    private ArrayList<byte[][]> getAllImmediateStates (byte[][] state) {
+
+    private short evaluateState(byte[][] state, boolean isBlackTurn){
+        return piecesPositionsScore(state, isBlackTurn);
+    }
+    private short piecesPositionsScore(byte[][] state, boolean isBlackTurn){
+        short score = 0;
+        if(isBlackTurn) {
+            for (byte y = 0; y < 8; y++) {
+                for (byte x = 0; x < 8; x++) {
+                    if (state[y][x] == B) score += (LevelBuild.positionsScore[y][x]);
+                }
+            }
+        }else{
+            for (byte y = 0; y < 8; y++) {
+                for (byte x = 0; x < 8; x++) {
+                    if (state[y][x] == W) score -= (LevelBuild.positionsScore[y][x]);
+                }
+            }
+        }
+
+        return score;
+    }
+
+
+    private List<byte[][]> getAllImmediateStates (byte[][] state, boolean isBlackMove) {
         ArrayList<byte[][]> states = new ArrayList<> (  );
         for(byte y = 0; y < 8; y++){
             for(byte x = 0; x < 8; x++){
-                if(state[y][x] == aiID){
-                    states.addAll ( getAllImmediateStatesFor(state, y, x) );
-                }
+                if(isBlackMove && state[y][x] == B)
+                    states.addAll ( getAllImmediateStatesFor(state, y, x, W, B) );
+                else if(!isBlackMove && state[y][x] == W)
+                    states.addAll ( getAllImmediateStatesFor(state, y, x, B, W) );
             }
         }
 
         return states;
     }
-    private ArrayList<byte[][]> getAllImmediateStatesFor ( byte[][] state, byte row, byte col ) {
-        ArrayList<Point> validPositions = getValidMoves ( state, row, col, playerID, aiID );
+    private ArrayList<byte[][]> getAllImmediateStatesFor ( byte[][] state, byte row, byte col, byte opponentPiece, byte playerPiece ) {
+        ArrayList<Point> validPositions = getValidMoves ( state, row, col, opponentPiece, playerPiece );
         ArrayList<byte[][]> immediateStates = new ArrayList<> (  );
+
         for(Point p: validPositions){
             byte[][] nextState = new byte[8][];
             for(byte i = 0; i < 8; i++)
-                nextState[i] = piecesPositions[i].clone ();
+                nextState[i] = state[i].clone ();
 
             nextState[row][col] = E;
-            nextState[p.getRow ()][p.getCol ()] = aiID;
+            nextState[p.getRow ()][p.getCol ()] = playerPiece;
             immediateStates.add ( nextState );
         }
         return immediateStates;
