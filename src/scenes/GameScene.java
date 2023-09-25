@@ -215,7 +215,7 @@ public abstract class GameScene {
 
     private void wins(byte color) {
         if (!gameWon)
-            if (allPiecesConnected(piecesPositions, color, getFirstPiece(color))) {
+            if (allPiecesConnected(piecesPositions, color, getFirstPiece(piecesPositions, color))) {
                 gameWon = true;
                 winner = color;
             }
@@ -243,10 +243,10 @@ public abstract class GameScene {
     }
 
 
-    protected Point getFirstPiece(byte color) {
+    protected Point getFirstPiece(byte[][] state, byte color) {
         for (byte i = 0; i < 8; i++)
             for (byte j = 0; j < 8; j++)
-                if (piecesPositions[i][j] == color)
+                if (state[i][j] == color)
                     return new Point(i, j);
         return null;
     }

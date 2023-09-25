@@ -7,6 +7,7 @@ import ui.MyButton;
 
 import java.awt.*;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 
@@ -21,17 +22,14 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
     Game game;
     ArrayList<Long> differences = new ArrayList<>();
     private MyButton bChooseWhite, bChooseBlack, bReset, bMenu;
-    private final Random random;
-    private int functionCalls;
+
 
 
     public PlayingAgainstAI(Game game) {
         super(game);
         this.game = game;
         initButtons();
-        random = new Random();
     }
-
     public static void setUpInitialGameState() {
         piecesPositions = LevelBuild.getInitialPiecesPositions();
         turn = BLACK_TURN;
@@ -41,14 +39,12 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         playerID = -1;
         aiID = -1;
     }
-
     private void initButtons() {
         bChooseBlack = new MyButton("Play As Black", 192, 128, 256, 128);
         bChooseWhite = new MyButton("Play As White", 192, 416, 256, 128);
         bMenu = new MyButton("Menu", 14, 12, 100, 40);
         bReset = new MyButton("Reset", 128, 12, 100, 40);
     }
-
     @Override
     public void render(Graphics g) {
         //draw buttons
@@ -76,17 +72,14 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             drawChoiceButtons(g);
         }
     }
-
     private void drawButtons(Graphics g) {
         bMenu.draw(g);
         bReset.draw(g);
     }
-
     private void drawChoiceButtons(Graphics g) {
         bChooseWhite.draw(g);
         bChooseBlack.draw(g);
     }
-
     private void chooseIDs(int x, int y) {
         if (bChooseWhite.getBounds().contains(x, y)) {
             playerID = W;
@@ -98,7 +91,6 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             idIsChosen = true;
         }
     }
-
     @Override
     protected void resetGame() {
         resetValidMovesAndActivePiece();
@@ -109,14 +101,12 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         playerID = -1;
         aiID = -1;
     }
-
     @Override
     protected void changeTurn() {
         if (turn == BLACK_TURN) turn = WHITE_TURN;
         else turn = BLACK_TURN;
         resetValidMovesAndActivePiece();
     }
-
     @Override
     protected void makeMove(int x, int y) {
         if (turn == playerID) {
@@ -126,7 +116,6 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             makePlayerMove(playerID, aiID, row, col);
         }
     }
-
     private void makeAiMove() {
 
         byte[][] bestState = new byte[8][];
@@ -166,6 +155,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
     }
 
 
+
     private short miniMax(byte[][] state, byte depth, boolean isMax, boolean isBlackTurn) {
         short stateScore = evaluateState(state, !isBlackTurn);
         if (depth == 0 || (short) (Math.abs(stateScore)) == Short.MAX_VALUE) return stateScore;
@@ -187,128 +177,112 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         }
     }
 
-    // TODO: fix who wins when move connects both white and black
-    //       check it by hand someday
+
+
     private short evaluateState(byte[][] state, boolean isBlackTurn) {
-
-        short specialWin = specialWinningCondition(state,! isBlackTurn);
-        if (specialWin != -1) {
-            return specialWin;
+        //quirky winning case - don't ask
+        {
+            short specialWin = specialWinningCondition(state, isBlackTurn);
+            if (specialWin != 0) return specialWin;
         }
 
-        return (short) (piecesPositionsScore(state, isBlackTurn) - getArea(state, isBlackTurn));
+        return (short) (
+                  piecesPositionsScore(state, isBlackTurn)
+                - getArea(state, isBlackTurn)
+                + 5*countEnemyPieces ( state, isBlackTurn )
+        );
     }
-
     private short specialWinningCondition(byte[][] state, boolean isBlackTurn) {
-        short BlackWinningState = winningState(state, B);
-        short WhiteWinningState = winningState(state, W);
-        if (!isBlackTurn) {
-            if (WhiteWinningState == Short.MIN_VALUE && BlackWinningState == Short.MAX_VALUE) {
-                return Short.MAX_VALUE;
-            }
-        } else {
-            if (WhiteWinningState == Short.MIN_VALUE && BlackWinningState == Short.MAX_VALUE) {
-                return Short.MIN_VALUE;
-            }
-        }
+        boolean blackWins = isWinningState(state, B);
+        boolean whiteWins = isWinningState(state, W);
 
-        if (BlackWinningState == Short.MAX_VALUE) {
-            return BlackWinningState;
-        }
 
-        if (WhiteWinningState == Short.MIN_VALUE) {
-            return WhiteWinningState;
-        }
+        if(blackWins && whiteWins) return isBlackTurn ? Short.MAX_VALUE : Short.MIN_VALUE;
 
-        return -1;
+
+        if(blackWins) return Short.MAX_VALUE;
+        if(whiteWins) return Short.MIN_VALUE;
+
+
+        return 0;
     }
-
-    private short winningState(byte[][] state, byte color) {
-        if (color == B && allPiecesConnected(state, color, getFirstPiece(color)))
-            return Short.MAX_VALUE;
-
-        if (color == W && allPiecesConnected(state, color, getFirstPiece(color)))
-            return Short.MIN_VALUE;
-
-        return -1;
+    private boolean isWinningState(byte[][] state, byte color) {
+        return allPiecesConnected ( state, color, getFirstPiece ( state, color ) );
     }
-
     private short piecesPositionsScore(byte[][] state, boolean isBlackTurn) {
+        byte color = isBlackTurn ? B : W;
         short score = 0;
-        if (isBlackTurn) {
-            for (byte y = 0; y < 8; y++) {
-                for (byte x = 0; x < 8; x++) {
-                    if (state[y][x] == B) score += (LevelBuild.positionsScore[y][x]);
-                }
-            }
-        } else {
-            for (byte y = 0; y < 8; y++) {
-                for (byte x = 0; x < 8; x++) {
-                    if (state[y][x] == W) score -= (LevelBuild.positionsScore[y][x]);
-                }
-            }
-        }
 
-        return score;
+        for (byte y = 0; y < 8; y++)
+            for (byte x = 0; x < 8; x++)
+                if (state[y][x] == color) score += (LevelBuild.positionsScore[y][x]);
+
+        return isBlackTurn ? score : (byte)(-1*score);
     }
-
     private byte getArea(byte[][] state, boolean isBlackTurn) {
         byte color = isBlackTurn ? B : W;
 
         byte height = (byte) (findBottomMostY(state, color) - findTopMostY(state, color));
         byte width = (byte) (findRightMostX(state, color) - findLeftMostX(state, color));
 
-        return color == B ? (byte) (height * width) : (byte) (-height * width);
+        return isBlackTurn? (byte) (height * width) : (byte) (-height * width);
     }
-
     private byte findLeftMostX(byte[][] state, byte color) {
 
-        for (byte column = 0; column < 8; column++) {
+        for (byte col = 0; col < 8; col++) {
             for (byte row = 7; row >= 0; row--) {
-                if (state[row][column] == color) {
-                    return column;
+                if (state[row][col] == color) {
+                    return col;
                 }
             }
         }
         return -1;
     }
-
     private byte findRightMostX(byte[][] state, byte color) {
 
 
-        for (byte column = 7; column >= 0; column--) {
+        for (byte col = 7; col >= 0; col--) {
             for (byte row = 7; row >= 0; row--) {
-                if (state[row][column] == color) {
-                    return column;
+                if (state[row][col] == color) {
+                    return col;
                 }
             }
         }
         return -1;
     }
-
     private byte findBottomMostY(byte[][] state, byte color) {
 
         for (byte row = 7; row >= 0; row--) {
-            for (byte column = 7; column >= 0; column--) {
-                if (state[row][column] == color) {
+            for (byte col = 7; col >= 0; col--) {
+                if (state[row][col] == color) {
                     return row;
                 }
             }
         }
         return -1;
     }
-
     private byte findTopMostY(byte[][] state, byte color) {
 
         for (byte row = 0; row < 8; row++) {
-            for (byte column = 0; column < 8; column++) {
-                if (state[row][column] == color) {
+            for (byte col = 0; col < 8; col++) {
+                if (state[row][col] == color) {
                     return row;
                 }
             }
         }
         return -1;
     }
+    private byte countEnemyPieces(byte[][] state, boolean isBlackTurn){
+        byte colorToCount = isBlackTurn ? W : B;
+        byte colorCount = 0;
+        for (byte row = 0; row < 8; row++) 
+            for (byte col = 0; col < 8; col++)
+                if(state[row][col] == colorToCount)
+                    colorCount++;
+
+        return isBlackTurn ? colorCount : (byte)(-1*colorCount);
+    }
+
 
 
     private List<byte[][]> getAllImmediateStates(byte[][] state, boolean isBlackMove) {
@@ -324,7 +298,6 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
 
         return states;
     }
-
     private ArrayList<byte[][]> getAllImmediateStatesFor(byte[][] state, byte row, byte col, byte opponentPiece, byte playerPiece) {
         ArrayList<Point> validPositions = getValidMoves(state, row, col, opponentPiece, playerPiece);
         ArrayList<byte[][]> immediateStates = new ArrayList<>();
@@ -340,6 +313,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         }
         return immediateStates;
     }
+
 
 
     @Override
@@ -370,7 +344,6 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         }
         makeMove(x, y);
     }
-
     @Override
     public void mouseMoved(int x, int y) {
         bChooseBlack.setMouseOver(false);
@@ -387,7 +360,6 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         else if (bReset.getBounds().contains(x, y))
             bReset.setMouseOver(true);
     }
-
     @Override
     public void mousePressed(int x, int y) {
         if (bChooseBlack.getBounds().contains(x, y))
@@ -399,12 +371,10 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         else if (bReset.getBounds().contains(x, y))
             bReset.setMousePressed(true);
     }
-
     @Override
     public void mouseReleased(int x, int y) {
         resetButtons();
     }
-
     private void resetButtons() {
         bChooseBlack.resetBooleans();
         bChooseWhite.resetBooleans();
