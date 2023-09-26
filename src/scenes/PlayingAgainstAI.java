@@ -24,7 +24,6 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
     private MyButton bChooseWhite, bChooseBlack, bReset, bMenu;
 
 
-
     public PlayingAgainstAI(Game game) {
         super(game);
         this.game = game;
@@ -152,9 +151,11 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         piecesPositions = bestState;
         checkWinningConditions();
         changeTurn();
+        System.out.println(statesEvaluated);
+        statesEvaluated=0;
     }
 
-
+    public static int statesEvaluated =0;
 
     private short miniMax(byte[][] state, byte depth, boolean isMax, boolean isBlackTurn) {
         short stateScore = evaluateState(state, !isBlackTurn);
@@ -180,17 +181,23 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
 
 
     private short evaluateState(byte[][] state, boolean isBlackTurn) {
+        statesEvaluated+=1;
         //quirky winning case - don't ask
         {
             short specialWin = specialWinningCondition(state, isBlackTurn);
             if (specialWin != 0) return specialWin;
         }
 
-        return (short) (
-                  piecesPositionsScore(state, isBlackTurn)
-                - getArea(state, isBlackTurn)
-                + 5*countEnemyPieces ( state, isBlackTurn )
+        short score = (short) (
+                piecesPositionsScore(state, isBlackTurn)
+                        - getArea(state, isBlackTurn)
+                        + 5*countEnemyPieces ( state, isBlackTurn )
+                        - 0.3*numberOfOpponentsMoves(state,isBlackTurn)
         );
+
+        System.out.println(score);
+
+        return score;
     }
     private short specialWinningCondition(byte[][] state, boolean isBlackTurn) {
         boolean blackWins = isWinningState(state, B);
@@ -218,6 +225,35 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
                 if (state[y][x] == color) score += (LevelBuild.positionsScore[y][x]);
 
         return isBlackTurn ? score : (byte)(-1*score);
+    }
+    private short numberOfOpponentsMoves(byte[][] state, boolean isBlackTurn){
+        byte opponentColor = isBlackTurn?W:B;
+        byte playerColor = isBlackTurn?B:W;
+
+       short numberOfPossibleNextPositionsForOpponent = 0;
+
+       List<Point> enemyPieces = getAllPiecesOfColor(state,opponentColor);
+
+        for(Point currentPiece:enemyPieces){
+            numberOfPossibleNextPositionsForOpponent += getValidMoves(state,currentPiece.getRow()
+                                                            ,currentPiece.getCol(),opponentColor,playerColor).size();
+        }
+
+        return isBlackTurn?numberOfPossibleNextPositionsForOpponent: (short) (-1 * numberOfPossibleNextPositionsForOpponent);
+
+    }
+    private List<Point> getAllPiecesOfColor(byte [][]state, byte color){
+        List<Point> returnList = new ArrayList<>();
+
+        for(byte row = 0; row<8;row++){
+            for(byte column = 0; column<8;column++){
+                if(state[row][column]==color){
+                    returnList.add(new Point(row,column));
+                }
+            }
+        }
+
+        return returnList;
     }
     private byte getArea(byte[][] state, boolean isBlackTurn) {
         byte color = isBlackTurn ? B : W;
