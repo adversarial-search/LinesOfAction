@@ -10,18 +10,21 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Function;
 
 import static main.GameStates.MENU;
 import static main.GameStates.SetGameState;
 
 public class PlayingAgainstAI extends GameScene implements SceneMethods {
     //  TODO fix array clone
-    private static final byte MAX_DEPTH = 2;
+    //  TODO try make global opponents piece and player piece instead of figuring it out in every function
+    private static final byte MAX_DEPTH_BASIC = 3;
+    private static final byte MAX_DEPTH_ALPHA_BETA = 3;
     private static boolean idIsChosen = false;
     private static byte playerID, aiID;
     Game game;
-    ArrayList<Long> differences = new ArrayList<>();
     private MyButton bChooseWhite, bChooseBlack, bReset, bMenu;
+    public static int statesEvaluated = 0;
 
 
     public PlayingAgainstAI(Game game) {
@@ -106,6 +109,9 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         else turn = BLACK_TURN;
         resetValidMovesAndActivePiece();
     }
+
+
+
     @Override
     protected void makeMove(int x, int y) {
         if (turn == playerID) {
@@ -116,7 +122,265 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         }
     }
     private void makeAiMove() {
+        //makeBasicMiniMaxMove ();
+        makeAlphaBetaMiniMaxMove ();
 
+        checkWinningConditions();
+        changeTurn();
+        System.out.println ( "Number of states evaluated: " + statesEvaluated );
+        statesEvaluated=0;
+    }
+    private void makeAlphaBetaMiniMaxMove(){
+        byte[][] bestState = new byte[8][];
+
+        for(byte i=0; i<8; i++) bestState[i] = piecesPositions[i].clone ();
+
+        if (aiID == W) {
+            short bestScore = Short.MAX_VALUE;
+            List<byte[][]> immediateStates = getAllImmediateStates(piecesPositions, false);
+
+            for (byte[][] state : immediateStates) {
+                short moveScore = miniMax(state, MAX_DEPTH_ALPHA_BETA, Short.MIN_VALUE, Short.MAX_VALUE, true, true);
+                if (moveScore < bestScore) {
+                    bestState = state;
+                    bestScore = moveScore;
+                }
+            }
+        } else {
+            short bestScore = Short.MIN_VALUE;
+            List<byte[][]> immediateStates = getAllImmediateStates(piecesPositions, true);
+            for (byte[][] state : immediateStates) {
+                short moveScore = miniMax(state, MAX_DEPTH_ALPHA_BETA, Short.MIN_VALUE, Short.MAX_VALUE, false, false);
+                if (moveScore > bestScore) {
+                    bestState = state;
+                    bestScore = moveScore;
+                }
+            }
+        }
+
+        piecesPositions = bestState;
+    }
+    private short miniMax(byte[][] state, byte depth, short alpha, short beta, boolean isMax, boolean isBlackTurn){
+        byte playerPiece = isBlackTurn ? B : W;
+        byte opponentPiece = isBlackTurn ? W : B;
+
+        short stateScore = evaluateState ( state, !isBlackTurn );
+
+        if(depth == 0 || (short) (Math.abs(stateScore)) == Short.MAX_VALUE) return stateScore;
+
+        List<Point> points = getAllPiecesOfColor ( state, playerPiece );
+
+        byte[][] nextState;
+        if(isMax){
+            short highestScore = Short.MIN_VALUE;
+
+            for(Point p: points){
+                Point positionToMoveTo;
+
+                //horizontal
+                {
+                    positionToMoveTo = getLeftHorizontalMove ( state, p.getRow ( ), p.getCol ( ), opponentPiece, playerPiece );
+                    if (positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        highestScore = (short) Math.max ( highestScore, miniMax ( nextState, (byte) (depth - 1), alpha, beta, false, !isBlackTurn ) );
+
+                        alpha = (short) Math.max ( alpha, highestScore );
+                        if (alpha >= beta) return highestScore;
+
+                    }
+
+                    positionToMoveTo = getRightHorizontalMove ( state, p.getRow ( ), p.getCol ( ), opponentPiece, playerPiece );
+                    if (positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        highestScore = (short) Math.max ( highestScore, miniMax ( nextState, (byte) (depth - 1), alpha, beta, false, !isBlackTurn ) );
+
+                        alpha = (short) Math.max ( alpha, highestScore );
+                        if (alpha >= beta) return highestScore;
+
+                    }
+                }
+
+                //vertical
+                {
+                    positionToMoveTo = getUpVerticalMove ( state, p.getRow (), p.getCol (), opponentPiece, playerPiece );
+                    if(positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        highestScore = (short) Math.max(highestScore, miniMax(nextState, (byte)(depth - 1), alpha, beta, false, !isBlackTurn));
+
+                        alpha = (short) Math.max(alpha, highestScore);
+                        if(alpha >= beta) return highestScore;
+
+                    }
+
+                    positionToMoveTo = getDownVerticalMove ( state, p.getRow (), p.getCol (), opponentPiece, playerPiece );
+                    if(positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        highestScore = (short) Math.max(highestScore, miniMax(nextState, (byte)(depth - 1), alpha, beta, false, !isBlackTurn));
+
+                        alpha = (short) Math.max(alpha, highestScore);
+                        if(alpha >= beta) return highestScore;
+
+                    }
+                }
+
+                //main diagonal
+                {
+                    positionToMoveTo = getDownMainDiagonalMove ( state, p.getRow (), p.getCol (), opponentPiece, playerPiece );
+                    if(positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        highestScore = (short) Math.max(highestScore, miniMax(nextState, (byte)(depth - 1), alpha, beta, false, !isBlackTurn));
+
+                        alpha = (short) Math.max(alpha, highestScore);
+                        if(alpha >= beta) return highestScore;
+
+                    }
+                    positionToMoveTo = getUpMainDiagonalMove ( state, p.getRow (), p.getCol (), opponentPiece, playerPiece );
+                    if(positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        highestScore = (short) Math.max(highestScore, miniMax(nextState, (byte)(depth - 1), alpha, beta, false, !isBlackTurn));
+
+                        alpha = (short) Math.max(alpha, highestScore);
+                        if(alpha >= beta) return highestScore;
+
+                    }
+                }
+
+                //anti diagonal
+                {
+                    positionToMoveTo = getUpAntiDiagonalMove ( state, p.getRow (), p.getCol (), opponentPiece, playerPiece );
+                    if(positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        highestScore = (short) Math.max(highestScore, miniMax(nextState, (byte)(depth - 1), alpha, beta, false, !isBlackTurn));
+
+                        alpha = (short) Math.max(alpha, highestScore);
+                        if(alpha >= beta) return highestScore;
+
+                    }
+                    positionToMoveTo = getDownAntiDiagonalMove ( state, p.getRow (), p.getCol (), opponentPiece, playerPiece );
+                    if(positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        highestScore = (short) Math.max(highestScore, miniMax(nextState, (byte)(depth - 1), alpha, beta, false, !isBlackTurn));
+
+                        alpha = (short) Math.max(alpha, highestScore);
+                        if(alpha >= beta) return highestScore;
+
+                    }
+                }
+            }
+
+            return highestScore;
+        }else{
+            short lowestScore = Short.MAX_VALUE;
+
+            for(Point p: points){
+                Point positionToMoveTo;
+
+                //horizontal
+                {
+                    positionToMoveTo = getLeftHorizontalMove ( state, p.getRow ( ), p.getCol ( ), opponentPiece, playerPiece );
+                    if (positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        lowestScore = (short) Math.min ( lowestScore, miniMax ( nextState, (byte) (depth - 1), alpha, beta, true, !isBlackTurn ) );
+
+                        beta = (short) Math.min ( beta, lowestScore );
+                        if (alpha >= beta) return lowestScore;
+                    }
+
+                    positionToMoveTo = getRightHorizontalMove ( state, p.getRow ( ), p.getCol ( ), opponentPiece, playerPiece );
+                    if (positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        lowestScore = (short) Math.min ( lowestScore, miniMax ( nextState, (byte) (depth - 1), alpha, beta, true, !isBlackTurn ) );
+
+                        beta = (short) Math.min ( beta, lowestScore );
+                        if (alpha >= beta) return lowestScore;
+                    }
+                }
+
+                //vertical
+                {
+                    positionToMoveTo = getUpVerticalMove ( state, p.getRow (), p.getCol (), opponentPiece, playerPiece );
+                    if(positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        lowestScore = (short) Math.min ( lowestScore, miniMax ( nextState, (byte) (depth - 1), alpha, beta, true, !isBlackTurn ) );
+
+                        beta = (short) Math.min ( beta, lowestScore );
+                        if (alpha >= beta) return lowestScore;
+                    }
+
+                    positionToMoveTo = getDownVerticalMove ( state, p.getRow (), p.getCol (), opponentPiece, playerPiece );
+                    if(positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        lowestScore = (short) Math.min ( lowestScore, miniMax ( nextState, (byte) (depth - 1), alpha, beta, true, !isBlackTurn ) );
+
+                        beta = (short) Math.min ( beta, lowestScore );
+                        if (alpha >= beta) return lowestScore;
+                    }
+                }
+
+                //main diagonal
+                {
+                    positionToMoveTo = getDownMainDiagonalMove ( state, p.getRow (), p.getCol (), opponentPiece, playerPiece );
+                    if(positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        lowestScore = (short) Math.min ( lowestScore, miniMax ( nextState, (byte) (depth - 1), alpha, beta, true, !isBlackTurn ) );
+
+                        beta = (short) Math.min ( beta, lowestScore );
+                        if (alpha >= beta) return lowestScore;
+                    }
+                    positionToMoveTo = getUpMainDiagonalMove ( state, p.getRow (), p.getCol (), opponentPiece, playerPiece );
+                    if(positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        lowestScore = (short) Math.min ( lowestScore, miniMax ( nextState, (byte) (depth - 1), alpha, beta, true, !isBlackTurn ) );
+
+                        beta = (short) Math.min ( beta, lowestScore );
+                        if (alpha >= beta) return lowestScore;
+                    }
+                }
+
+                //anti diagonal
+                {
+                    positionToMoveTo = getUpAntiDiagonalMove ( state, p.getRow (), p.getCol (), opponentPiece, playerPiece );
+                    if(positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        lowestScore = (short) Math.min ( lowestScore, miniMax ( nextState, (byte) (depth - 1), alpha, beta, true, !isBlackTurn ) );
+
+                        beta = (short) Math.min ( beta, lowestScore );
+                        if (alpha >= beta) return lowestScore;
+                    }
+                    positionToMoveTo = getDownAntiDiagonalMove ( state, p.getRow (), p.getCol (), opponentPiece, playerPiece );
+                    if(positionToMoveTo != null) {
+                        nextState = getStateFromMove ( state, p, positionToMoveTo );
+
+                        lowestScore = (short) Math.min ( lowestScore, miniMax ( nextState, (byte) (depth - 1), alpha, beta, true, !isBlackTurn ) );
+
+                        beta = (short) Math.min ( beta, lowestScore );
+                        if (alpha >= beta) return lowestScore;
+                    }
+                }
+            }
+
+            return lowestScore;
+        }
+
+    }
+
+
+    private void makeBasicMiniMaxMove(){
         byte[][] bestState = new byte[8][];
 
         for (byte i = 0; i < 8; i++) {
@@ -129,7 +393,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             List<byte[][]> immediateStates = getAllImmediateStates(piecesPositions, false);
 
             for (byte[][] state : immediateStates) {
-                short moveScore = miniMax(state, MAX_DEPTH, true, true);
+                short moveScore = miniMax(state, MAX_DEPTH_BASIC, true, true);
                 if (moveScore < bestScore) {
                     bestState = state;
                     bestScore = moveScore;
@@ -139,7 +403,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             short bestScore = Short.MIN_VALUE;
             List<byte[][]> immediateStates = getAllImmediateStates(piecesPositions, true);
             for (byte[][] state : immediateStates) {
-                short moveScore = miniMax(state, MAX_DEPTH, false, false);
+                short moveScore = miniMax(state, MAX_DEPTH_BASIC, false, false);
                 if (moveScore > bestScore) {
                     bestState = state;
                     bestScore = moveScore;
@@ -149,14 +413,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
 
 
         piecesPositions = bestState;
-        checkWinningConditions();
-        changeTurn();
-        System.out.println(statesEvaluated);
-        statesEvaluated=0;
     }
-
-    public static int statesEvaluated =0;
-
     private short miniMax(byte[][] state, byte depth, boolean isMax, boolean isBlackTurn) {
         short stateScore = evaluateState(state, !isBlackTurn);
         if (depth == 0 || (short) (Math.abs(stateScore)) == Short.MAX_VALUE) return stateScore;
@@ -194,8 +451,6 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
                         + 5*countEnemyPieces ( state, isBlackTurn )
                         - 0.3*numberOfOpponentsMoves(state,isBlackTurn)
         );
-
-        System.out.println(score);
 
         return score;
     }
@@ -235,18 +490,22 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
        List<Point> enemyPieces = getAllPiecesOfColor(state,opponentColor);
 
         for(Point currentPiece:enemyPieces){
-            numberOfPossibleNextPositionsForOpponent += getValidMoves(state,currentPiece.getRow()
-                                                            ,currentPiece.getCol(),opponentColor,playerColor).size();
+            numberOfPossibleNextPositionsForOpponent += getValidMoves(
+                                                                        state,
+                                                                        currentPiece.getRow(),
+                                                                        currentPiece.getCol(),
+                                                                        opponentColor,
+                                                                        playerColor
+                                                                ).size();
         }
 
-        return isBlackTurn?numberOfPossibleNextPositionsForOpponent: (short) (-1 * numberOfPossibleNextPositionsForOpponent);
-
+        return isBlackTurn ? numberOfPossibleNextPositionsForOpponent : (short) (-1 * numberOfPossibleNextPositionsForOpponent);
     }
-    private List<Point> getAllPiecesOfColor(byte [][]state, byte color){
+    private List<Point> getAllPiecesOfColor(byte[][] state, byte color){
         List<Point> returnList = new ArrayList<>();
 
-        for(byte row = 0; row<8;row++){
-            for(byte column = 0; column<8;column++){
+        for(byte row = 0; row<8; row++){
+            for(byte column = 0; column<8; column++){
                 if(state[row][column]==color){
                     returnList.add(new Point(row,column));
                 }
@@ -373,11 +632,6 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
 
 
         //game logic
-        if (gameWon) {
-            for (Long time : differences)
-                System.out.println(time);
-            return;
-        }
         makeMove(x, y);
     }
     @Override
