@@ -7,9 +7,7 @@ import ui.MyButton;
 
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Function;
 
 import static main.GameStates.MENU;
@@ -21,9 +19,12 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
     private static final byte MAX_DEPTH_BASIC = 3;
     private static final byte MAX_DEPTH_ALPHA_BETA = 3;
     private static boolean idIsChosen = false;
+    private static boolean aiTypeIsChosen = false;
     private static byte playerID, aiID;
+
+    private static byte aiType;
     Game game;
-    private MyButton bChooseWhite, bChooseBlack, bReset, bMenu;
+    private MyButton bChooseWhite, bChooseBlack, bReset, bMenu,bChooseNoPruning,bChooseAlphaBeta;
     public static int statesEvaluated = 0;
 
 
@@ -44,13 +45,15 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
     private void initButtons() {
         bChooseBlack = new MyButton("Play As Black", 192, 128, 256, 128);
         bChooseWhite = new MyButton("Play As White", 192, 416, 256, 128);
+        bChooseNoPruning = new MyButton("Simple MinMax", 192, 128, 256, 128);
+        bChooseAlphaBeta = new MyButton("Alpha Beta MinMax", 192, 416, 256, 128);
         bMenu = new MyButton("Menu", 14, 12, 100, 40);
         bReset = new MyButton("Reset", 128, 12, 100, 40);
     }
     @Override
     public void render(Graphics g) {
         //draw buttons
-        if (idIsChosen) {
+        if (idIsChosen && aiTypeIsChosen) {
             //draw background
             drawBoardBackground(g);
 
@@ -70,17 +73,26 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             displayWinner(g);
             if (turn == aiID) makeAiMove();
         } else {
-            drawMenuBackground(g);
-            drawChoiceButtons(g);
+            if(!idIsChosen) {
+                drawMenuBackground(g);
+                drawChooseSideButtons(g);
+            } else if(!aiTypeIsChosen) {
+                drawMenuBackground(g);
+                drawChooseAiTypeButtons(g);
+            }
         }
     }
     private void drawButtons(Graphics g) {
         bMenu.draw(g);
         bReset.draw(g);
     }
-    private void drawChoiceButtons(Graphics g) {
+    private void drawChooseSideButtons(Graphics g) {
         bChooseWhite.draw(g);
         bChooseBlack.draw(g);
+    }
+    private void drawChooseAiTypeButtons(Graphics g){
+        bChooseAlphaBeta.draw(g);
+        bChooseNoPruning.draw(g);
     }
     private void chooseIDs(int x, int y) {
         if (bChooseWhite.getBounds().contains(x, y)) {
@@ -93,6 +105,16 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             idIsChosen = true;
         }
     }
+    private void chooseAiType(int x, int y){
+        if(bChooseAlphaBeta.getBounds().contains(x,y)){
+            aiType=PRUNING_MINMAX;
+            aiTypeIsChosen=true;
+        }
+        else if(bChooseNoPruning.getBounds().contains(x,y)){
+            aiType=CLASSIC_MINMAX;
+            aiTypeIsChosen=true;
+        }
+    }
     @Override
     protected void resetGame() {
         resetValidMovesAndActivePiece();
@@ -100,6 +122,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         gameWon = false;
         turn = BLACK_TURN;
         idIsChosen = false;
+        aiTypeIsChosen=false;
         playerID = -1;
         aiID = -1;
     }
@@ -122,8 +145,10 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         }
     }
     private void makeAiMove() {
-        //makeBasicMiniMaxMove ();
-        makeAlphaBetaMiniMaxMove ();
+        switch (aiType) {
+            case CLASSIC_MINMAX -> makeBasicMiniMaxMove();
+            case PRUNING_MINMAX -> makeAlphaBetaMiniMaxMove();
+        }
 
         checkWinningConditions();
         changeTurn();
@@ -617,6 +642,9 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         if (!idIsChosen) {
             chooseIDs(x, y);
             return;
+        } else if (!aiTypeIsChosen) {
+            chooseAiType(x,y);
+            return;
         }
 
 
@@ -640,6 +668,8 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         bChooseWhite.setMouseOver(false);
         bMenu.setMouseOver(false);
         bReset.setMouseOver(false);
+        bChooseAlphaBeta.setMouseOver(false);
+        bChooseNoPruning.setMouseOver(false);
 
         if (bChooseBlack.getBounds().contains(x, y))
             bChooseBlack.setMouseOver(true);
@@ -649,6 +679,11 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             bMenu.setMouseOver(true);
         else if (bReset.getBounds().contains(x, y))
             bReset.setMouseOver(true);
+
+        if (bChooseNoPruning.getBounds().contains(x, y))
+            bChooseNoPruning.setMouseOver(true);
+        else if (bChooseAlphaBeta.getBounds().contains(x, y))
+            bChooseAlphaBeta.setMouseOver(true);
     }
     @Override
     public void mousePressed(int x, int y) {
@@ -660,6 +695,11 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             bMenu.setMousePressed(true);
         else if (bReset.getBounds().contains(x, y))
             bReset.setMousePressed(true);
+
+        if (bChooseNoPruning.getBounds().contains(x, y))
+            bChooseNoPruning.setMousePressed(true);
+        else if (bChooseAlphaBeta.getBounds().contains(x, y))
+            bChooseAlphaBeta.setMousePressed(true);
     }
     @Override
     public void mouseReleased(int x, int y) {
@@ -670,5 +710,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         bChooseWhite.resetBooleans();
         bMenu.resetBooleans();
         bReset.resetBooleans();
+        bChooseNoPruning.resetBooleans();
+        bChooseAlphaBeta.resetBooleans();
     }
 }
