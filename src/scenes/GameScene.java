@@ -4,6 +4,7 @@ import assistants.LevelBuild;
 import main.Game;
 import managers.TileManager;
 import objects.Point;
+import objects.StateGenerationDTO;
 
 import java.awt.*;
 import java.util.ArrayDeque;
@@ -141,6 +142,20 @@ public abstract class GameScene {
         }
 
         return tempValidMoves;
+    }
+    protected List<Function<StateGenerationDTO,Point>> getMovementFunctions(){
+        List<Function<StateGenerationDTO,Point>> functionList = new ArrayList<>();
+
+        functionList.add((s)->getLeftHorizontalMove(s.getState(),s.getRow(),s.getColumn(),s.getOpponentPiece(),s.getPlayerPiece()));
+        functionList.add((s)->getRightHorizontalMove(s.getState(),s.getRow(),s.getColumn(),s.getOpponentPiece(),s.getPlayerPiece()));
+        functionList.add((s)->getUpVerticalMove(s.getState(),s.getRow(),s.getColumn(),s.getOpponentPiece(),s.getPlayerPiece()));
+        functionList.add((s)->getDownVerticalMove(s.getState(),s.getRow(),s.getColumn(),s.getOpponentPiece(),s.getPlayerPiece()));
+        functionList.add((s)->getUpMainDiagonalMove(s.getState(),s.getRow(),s.getColumn(),s.getOpponentPiece(),s.getPlayerPiece()));
+        functionList.add((s)->getDownMainDiagonalMove(s.getState(),s.getRow(),s.getColumn(),s.getOpponentPiece(),s.getPlayerPiece()));
+        functionList.add((s)->getUpAntiDiagonalMove(s.getState(),s.getRow(),s.getColumn(),s.getOpponentPiece(),s.getPlayerPiece()));
+        functionList.add((s)->getDownAntiDiagonalMove(s.getState(),s.getRow(),s.getColumn(),s.getOpponentPiece(),s.getPlayerPiece()));
+
+    return functionList;
     }
     protected Point getLeftHorizontalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
         byte numHorizontalPieces = getNumHorizontalPieces ( state, row );
