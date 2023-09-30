@@ -5,7 +5,7 @@ import main.Game;
 import objects.Point;
 import objects.StateGenerationDTO;
 import ui.MyButton;
-
+import java.util.Random;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
     private static boolean aiTypeIsChosen = false;
     private static byte playerID, aiID, aiType;
     public static int statesEvaluated = 0, showNumStatesEvaluated;
-
+    private static final Random random = new Random ( );
     Game game;
     private MyButton
             bChooseWhite,
@@ -204,9 +204,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         statesEvaluated=0;
     }
     private void makeAlphaBetaMiniMaxMove(){
-        byte[][] bestState = new byte[8][];
-
-        for(byte i=0; i<8; i++) bestState[i] = piecesPositions[i].clone ();
+        ArrayList<byte[][]> bestMoves = new ArrayList<> (  );
 
         if (aiID == W) {
             short bestScore = Short.MAX_VALUE;
@@ -215,9 +213,12 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             for (byte[][] state : immediateStates) {
                 short moveScore = miniMax(state, MAX_DEPTH_ALPHA_BETA, Short.MIN_VALUE, Short.MAX_VALUE, true, true);
                 if (moveScore < bestScore) {
-                    bestState = state;
                     bestScore = moveScore;
-                }
+
+                    bestMoves = new ArrayList<> (  );
+                    bestMoves.add ( state );
+                }else if(moveScore == bestScore)
+                    bestMoves.add ( state );
             }
         } else {
             short bestScore = Short.MIN_VALUE;
@@ -225,13 +226,17 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             for (byte[][] state : immediateStates) {
                 short moveScore = miniMax(state, MAX_DEPTH_ALPHA_BETA, Short.MIN_VALUE, Short.MAX_VALUE, false, false);
                 if (moveScore > bestScore) {
-                    bestState = state;
                     bestScore = moveScore;
-                }
+
+                    bestMoves = new ArrayList<> (  );
+                    bestMoves.add ( state );
+                }else if(moveScore == bestScore)
+                    bestMoves.add ( state );
             }
         }
 
-        piecesPositions = bestState;
+        System.out.println ( bestMoves.size () );
+        piecesPositions = bestMoves.get(random.nextInt ( bestMoves.size () ));
     }
     private short miniMax(byte[][] state, byte depth, short alpha, short beta, boolean isMax, boolean isBlackTurn){
         byte playerPiece = isBlackTurn ? B : W;
@@ -291,12 +296,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
 
 
     private void makeBasicMiniMaxMove(){
-        byte[][] bestState = new byte[8][];
-
-        for (byte i = 0; i < 8; i++) {
-            bestState[i] = piecesPositions[i].clone();
-        }
-
+        ArrayList<byte[][]> bestMoves = new ArrayList<> (  );
 
         if (aiID == W) {
             short bestScore = Short.MAX_VALUE;
@@ -305,8 +305,12 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             for (byte[][] state : immediateStates) {
                 short moveScore = miniMax(state, MAX_DEPTH_BASIC, true, true);
                 if (moveScore < bestScore) {
-                    bestState = state;
                     bestScore = moveScore;
+
+                    bestMoves = new ArrayList<> (  );
+                    bestMoves.add ( state );
+                }else if(moveScore == bestScore){
+                    bestMoves.add ( state );
                 }
             }
         } else {
@@ -315,14 +319,17 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             for (byte[][] state : immediateStates) {
                 short moveScore = miniMax(state, MAX_DEPTH_BASIC, false, false);
                 if (moveScore > bestScore) {
-                    bestState = state;
                     bestScore = moveScore;
+
+                    bestMoves = new ArrayList<> (  );
+                    bestMoves.add ( state );
+                }else if(moveScore == bestScore){
+                    bestMoves.add ( state );
                 }
             }
         }
-
-
-        piecesPositions = bestState;
+        System.out.println ( bestMoves.size () );
+        piecesPositions = bestMoves.get(random.nextInt ( bestMoves.size () ));
     }
     private short miniMax(byte[][] state, byte depth, boolean isMax, boolean isBlackTurn) {
         short stateScore = evaluateState(state, !isBlackTurn);
