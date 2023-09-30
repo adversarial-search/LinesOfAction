@@ -47,6 +47,7 @@ public class Menu extends GameScene implements SceneMethods {
             PlayingAgainstPerson.setUpInitialGameState();
             SetGameState(PLAYING_AGAINST_PERSON);
         } else if (bAIAgainstAI.getBounds().contains(x, y)) {
+            AIAgainstAI.setUpInitialGameState();
             SetGameState(AI_AGAINST_AI);
         } else if (bQuit.getBounds().contains(x, y)) {
             System.exit(0);

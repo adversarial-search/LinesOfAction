@@ -20,6 +20,9 @@ public class Render {
             case PLAYING_AGAINST_AI:
                 game.getPlayingAgainstAI().render(g);
                 break;
+            case AI_AGAINST_AI:
+                game.getAIAgainstAI().render(g);
+                break;
         }
     }
 

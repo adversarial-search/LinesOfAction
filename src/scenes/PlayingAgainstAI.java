@@ -38,7 +38,6 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
 
     public PlayingAgainstAI(Game game) {
         super(game);
-        this.game = game;
         initButtons();
     }
     public static void setUpInitialGameState() {
