@@ -14,7 +14,6 @@ import java.util.Queue;
 import java.util.function.Function;
 
 public abstract class GameScene {
-    //TODO find a better way to call the 8 functions in PlayingAgainstAI: miniMaxAlphaBeta
     protected static final byte WHITE_TURN = 0, BLACK_TURN = 1, W = 0, B = 1, E = 2,PRUNING_MINMAX = 0, CLASSIC_MINMAX=1;
     protected static byte[][] piecesPositions;
     protected static byte turn = B;

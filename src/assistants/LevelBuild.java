@@ -16,6 +16,7 @@ public class LevelBuild {
             {0, 10, 10, 10, 10, 10, 10, 0},
             {0,  0,  0,  0,  0,  0,  0, 0}
     };
+    public static final byte[] numPiecesScore = {0, 0, 127, 98, 76, 59, 42, 30, 20, 14, 8, 3};
     private static final byte W = 0;
     private static final byte B = 1;
     private static final byte E = 2;

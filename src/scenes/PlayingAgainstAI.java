@@ -15,18 +15,25 @@ import static main.GameStates.MENU;
 import static main.GameStates.SetGameState;
 
 public class PlayingAgainstAI extends GameScene implements SceneMethods {
-    //  TODO fix array clone
     //  TODO try make global opponents piece and player piece instead of figuring it out in every function
-    private static final byte MAX_DEPTH_BASIC = 3;
-    private static final byte MAX_DEPTH_ALPHA_BETA = 3;
+    private static byte MAX_DEPTH_BASIC = 0;
+    private static byte MAX_DEPTH_ALPHA_BETA = 0;
     private static boolean idIsChosen = false;
     private static boolean aiTypeIsChosen = false;
-    private static byte playerID, aiID;
+    private static byte playerID, aiID, aiType;
+    public static int statesEvaluated = 0, showNumStatesEvaluated;
 
-    private static byte aiType;
     Game game;
-    private MyButton bChooseWhite, bChooseBlack, bReset, bMenu,bChooseNoPruning,bChooseAlphaBeta;
-    public static int statesEvaluated = 0;
+    private MyButton
+            bChooseWhite,
+            bChooseBlack,
+            bReset,
+            bMenu,
+            bChooseNoPruning,
+            bChooseAlphaBeta,
+            bIncreaseDepth,
+            bDecreaseDepth;
+
 
 
     public PlayingAgainstAI(Game game) {
@@ -50,6 +57,8 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         bChooseAlphaBeta = new MyButton("Alpha Beta MinMax", 192, 416, 256, 128);
         bMenu = new MyButton("Menu", 14, 12, 100, 40);
         bReset = new MyButton("Reset", 128, 12, 100, 40);
+        bIncreaseDepth = new MyButton ( "++Depth", 242, 37, 100, 25 );
+        bDecreaseDepth = new MyButton ( "--Depth", 242, 6, 100, 25 );
     }
     @Override
     public void render(Graphics g) {
@@ -72,17 +81,50 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
 
             //display winner
             displayWinner(g);
+
+            //draw depth management buttons
+            drawDepthButtons(g);
+
+            //display current depth
+            displayDepthAndNumStates(g);
             if (turn == aiID) makeAiMove();
         } else {
             if(!idIsChosen) {
                 drawMenuBackground(g);
                 drawChooseSideButtons(g);
-            } else if(!aiTypeIsChosen) {
+            } else {
                 drawMenuBackground(g);
                 drawChooseAiTypeButtons(g);
             }
         }
     }
+
+    private void displayDepthAndNumStates ( Graphics g ) {
+        if(!gameWon) {
+            g.setColor ( new Color ( 168, 212, 190 ) );
+            g.fillRect ( 356, 12, 40, 40 );
+            g.setColor ( new Color ( 88, 69, 47 ) );
+            g.drawRect ( 356, 12, 40, 40 );
+
+            String depthStr = aiType == PRUNING_MINMAX ? String.valueOf ( MAX_DEPTH_ALPHA_BETA ) : String.valueOf ( MAX_DEPTH_BASIC );
+            g.drawString ( depthStr, 372, 37 );
+
+            g.setColor ( new Color ( 168, 212, 190 ) );
+            g.fillRect ( 408, 12, 100, 40 );
+            g.setColor ( new Color ( 88, 69, 47 ) );
+            g.drawRect ( 408, 12, 100, 40 );
+            g.drawString ( "States Evaluated", 412, 28 );
+            g.drawString ( String.valueOf ( showNumStatesEvaluated ), 412, 45 );
+        }
+    }
+
+    private void drawDepthButtons ( Graphics g ) {
+        if(!gameWon) {
+            bIncreaseDepth.draw ( g );
+            bDecreaseDepth.draw ( g );
+        }
+    }
+
     private void drawButtons(Graphics g) {
         bMenu.draw(g);
         bReset.draw(g);
@@ -126,6 +168,10 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         aiTypeIsChosen=false;
         playerID = -1;
         aiID = -1;
+        MAX_DEPTH_BASIC = 0;
+        MAX_DEPTH_ALPHA_BETA = 0;
+        statesEvaluated = 0;
+        showNumStatesEvaluated = 0;
     }
     @Override
     protected void changeTurn() {
@@ -153,7 +199,8 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
 
         checkWinningConditions();
         changeTurn();
-        System.out.println ( "Number of states evaluated: " + statesEvaluated );
+
+        showNumStatesEvaluated = statesEvaluated;
         statesEvaluated=0;
     }
     private void makeAlphaBetaMiniMaxMove(){
@@ -309,9 +356,9 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         }
 
         short score = (short) (
-                piecesPositionsScore(state, isBlackTurn)
+                          piecesPositionsScore(state, isBlackTurn)
                         - getArea(state, isBlackTurn)
-                        + 5*countEnemyPieces ( state, isBlackTurn )
+                        - 15*countEnemyPieces ( state, isBlackTurn ) //?????
                         - 0.3*numberOfOpponentsMoves(state,isBlackTurn)
         );
 
@@ -438,7 +485,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
                 if(state[row][col] == colorToCount)
                     colorCount++;
 
-        return isBlackTurn ? colorCount : (byte)(-1*colorCount);
+        return isBlackTurn ? LevelBuild.numPiecesScore[colorCount-1] : (byte)(-1*LevelBuild.numPiecesScore[colorCount-1]);
     }
 
 
@@ -486,7 +533,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         }
 
 
-        // check if clicked on Menu or Reset
+        // check if clicked management buttons
         if (bMenu.getBounds().contains(x, y)) {
             resetGame();
             SetGameState(MENU);
@@ -494,12 +541,31 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         } else if (bReset.getBounds().contains(x, y)) {
             resetGame();
             return;
+        } else if (bIncreaseDepth.getBounds ().contains ( x, y )){
+            increaseDepth();
+        } else if (bDecreaseDepth.getBounds ().contains ( x, y )){
+            decreaseDepth();
         }
 
 
         //game logic
         makeMove(x, y);
     }
+    private void increaseDepth () {
+        if(aiType == PRUNING_MINMAX)
+            MAX_DEPTH_ALPHA_BETA = (byte) Math.min( MAX_DEPTH_ALPHA_BETA+1, 3 );
+        else if(aiType == CLASSIC_MINMAX)
+            MAX_DEPTH_BASIC = (byte) Math.min ( MAX_DEPTH_BASIC+1, 3 );
+    }
+    private void decreaseDepth () {
+        if(aiType == PRUNING_MINMAX)
+            MAX_DEPTH_ALPHA_BETA = (byte) Math.max( MAX_DEPTH_ALPHA_BETA-1, 0 );
+        else if(aiType == CLASSIC_MINMAX)
+            MAX_DEPTH_BASIC = (byte) Math.max ( MAX_DEPTH_BASIC-1, 0 );
+    }
+
+
+
     @Override
     public void mouseMoved(int x, int y) {
         bChooseBlack.setMouseOver(false);
@@ -508,6 +574,8 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         bReset.setMouseOver(false);
         bChooseAlphaBeta.setMouseOver(false);
         bChooseNoPruning.setMouseOver(false);
+        bIncreaseDepth.setMouseOver ( false );
+        bDecreaseDepth.setMouseOver ( false );
 
         if (bChooseBlack.getBounds().contains(x, y))
             bChooseBlack.setMouseOver(true);
@@ -517,11 +585,14 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             bMenu.setMouseOver(true);
         else if (bReset.getBounds().contains(x, y))
             bReset.setMouseOver(true);
-
-        if (bChooseNoPruning.getBounds().contains(x, y))
+        else if (bChooseNoPruning.getBounds().contains(x, y))
             bChooseNoPruning.setMouseOver(true);
         else if (bChooseAlphaBeta.getBounds().contains(x, y))
             bChooseAlphaBeta.setMouseOver(true);
+        else if (bIncreaseDepth.getBounds ().contains ( x, y ))
+            bIncreaseDepth.setMouseOver ( true );
+        else if (bDecreaseDepth.getBounds ().contains ( x, y ))
+            bDecreaseDepth.setMouseOver ( true );
     }
     @Override
     public void mousePressed(int x, int y) {
@@ -533,11 +604,14 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             bMenu.setMousePressed(true);
         else if (bReset.getBounds().contains(x, y))
             bReset.setMousePressed(true);
-
-        if (bChooseNoPruning.getBounds().contains(x, y))
+        else if (bChooseNoPruning.getBounds().contains(x, y))
             bChooseNoPruning.setMousePressed(true);
         else if (bChooseAlphaBeta.getBounds().contains(x, y))
             bChooseAlphaBeta.setMousePressed(true);
+        else if (bIncreaseDepth.getBounds ().contains ( x, y ))
+            bIncreaseDepth.setMousePressed ( true );
+        else if (bDecreaseDepth.getBounds ().contains ( x, y ))
+            bDecreaseDepth.setMousePressed ( true );
     }
     @Override
     public void mouseReleased(int x, int y) {
@@ -550,5 +624,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         bReset.resetBooleans();
         bChooseNoPruning.resetBooleans();
         bChooseAlphaBeta.resetBooleans();
+        bIncreaseDepth.resetBooleans ();
+        bDecreaseDepth.resetBooleans ();
     }
 }
