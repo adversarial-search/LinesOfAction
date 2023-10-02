@@ -62,7 +62,7 @@ public abstract class GameScene {
         }
     }
 
-    private byte getNumHorizontalPieces(byte[][] state, byte row){
+    private static byte getNumHorizontalPieces(byte[][] state, byte row){
         byte numHorizontalPieces = 0;
 
         for (byte x = 0; x < 8; x++)
@@ -71,7 +71,7 @@ public abstract class GameScene {
 
         return numHorizontalPieces;
     }
-    private byte getNumVerticalPieces(byte[][] state, byte col){
+    private static byte getNumVerticalPieces(byte[][] state, byte col){
         byte numVerticalPieces = 0;
 
         for (byte y = 0; y < 8; y++)
@@ -80,7 +80,7 @@ public abstract class GameScene {
 
         return numVerticalPieces;
     }
-    private byte getNumMainDiagPieces(byte[][] state, byte row, byte col){
+    private static byte getNumMainDiagPieces(byte[][] state, byte row, byte col){
         byte numMainDiagPieces = 0;
 
         byte minVertOrHorizDist = (byte) Math.min ( row, col );
@@ -90,7 +90,7 @@ public abstract class GameScene {
 
         return numMainDiagPieces;
     }
-    private byte getNumAntiDiagPieces(byte[][] state, byte row, byte col){
+    private static byte getNumAntiDiagPieces(byte[][] state, byte row, byte col){
         byte numAntiDiagPieces = 0;
 
         byte minVertOrHorizDist = (byte) Math.min ( 7 - row, col );
@@ -100,7 +100,7 @@ public abstract class GameScene {
 
         return numAntiDiagPieces;
     }
-    protected ArrayList<Point> getValidMoves(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece) {
+    public static ArrayList<Point> getValidMoves(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece) {
         ArrayList<Point> tempValidMoves = new ArrayList<>();
         Point p;
 
@@ -156,7 +156,7 @@ public abstract class GameScene {
 
     return functionList;
     }
-    protected Point getLeftHorizontalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
+    protected static Point getLeftHorizontalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
         byte numHorizontalPieces = getNumHorizontalPieces ( state, row );
         boolean pathContainsOpponentPiece = false;
         if (col - numHorizontalPieces >= 0) {
@@ -170,7 +170,7 @@ public abstract class GameScene {
         }
         return null;
     }
-    protected Point getRightHorizontalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
+    protected static Point getRightHorizontalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
         byte numHorizontalPieces = getNumHorizontalPieces ( state, row );
         boolean pathContainsOpponentPiece = false;
         if (col + numHorizontalPieces < 8) {
@@ -184,7 +184,7 @@ public abstract class GameScene {
         }
         return null;
     }
-    protected Point getUpVerticalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
+    protected static Point getUpVerticalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
         byte numVerticalPieces = getNumVerticalPieces ( state, col );
         boolean pathContainsOpponentPiece = false;
         if (row - numVerticalPieces >= 0) {
@@ -198,7 +198,7 @@ public abstract class GameScene {
         }
         return null;
     }
-    protected Point getDownVerticalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
+    protected static Point getDownVerticalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
         byte numVerticalPieces = getNumVerticalPieces ( state, col );
         boolean pathContainsOpponentPiece = false;
         if (row + numVerticalPieces < 8) {
@@ -212,7 +212,7 @@ public abstract class GameScene {
         }
         return null;
     }
-    protected Point getUpMainDiagonalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
+    protected static Point getUpMainDiagonalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
         byte numMainDiagPieces = getNumMainDiagPieces ( state, row, col );
         boolean pathContainsOpponentPiece = false;
         if (row - numMainDiagPieces >= 0 && col - numMainDiagPieces >= 0) {
@@ -226,7 +226,7 @@ public abstract class GameScene {
         }
         return null;
     }
-    protected Point getDownMainDiagonalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
+    protected static Point getDownMainDiagonalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
         byte numMainDiagPieces = getNumMainDiagPieces ( state, row, col );
         boolean pathContainsOpponentPiece = false;
         if (row + numMainDiagPieces < 8 && col + numMainDiagPieces < 8) {
@@ -240,7 +240,7 @@ public abstract class GameScene {
         }
         return null;
     }
-    protected Point getUpAntiDiagonalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
+    protected static Point getUpAntiDiagonalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
         byte numAntiDiagPieces = getNumAntiDiagPieces ( state, row, col );
         boolean pathContainsOpponentPiece = false;
         if (row - numAntiDiagPieces >= 0 && col + numAntiDiagPieces < 8) {
@@ -254,7 +254,7 @@ public abstract class GameScene {
         }
         return null;
     }
-    protected Point getDownAntiDiagonalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
+    protected static Point getDownAntiDiagonalMove(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece ){
         byte numAntiDiagPieces = getNumAntiDiagPieces ( state, row, col );
         boolean pathContainsOpponentPiece = false;
         if (row + numAntiDiagPieces < 8 && col - numAntiDiagPieces >= 0) {
@@ -281,7 +281,19 @@ public abstract class GameScene {
             return piecesPositions[selectedPiece.getRow()][selectedPiece.getCol()] != playersPiece;
         return false;
     }
+    public static List<Point> getAllPiecesOfColor(byte[][] state, byte color){
+        List<Point> returnList = new ArrayList<>();
 
+        for(byte row = 0; row<8; row++){
+            for(byte column = 0; column<8; column++){
+                if(state[row][column]==color){
+                    returnList.add(new Point(row,column));
+                }
+            }
+        }
+
+        return returnList;
+    }
 
 
     protected void checkWinningConditions() {

@@ -17,8 +17,8 @@ public class LevelBuild {
             {0,  0,  0,  0,  0,  0,  0, 0}
     };
     public static final byte[] numPiecesScore = {0, 0, 127, 98, 76, 59, 42, 30, 20, 14, 8, 3};
-    private static final byte W = 0;
-    private static final byte B = 1;
+    public static final byte W = 0;
+    public static final byte B = 1;
     private static final byte E = 2;
     private static final TileManager tileManager = new TileManager();
 
