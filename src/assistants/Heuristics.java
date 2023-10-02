@@ -42,7 +42,7 @@ public class Heuristics {
         List<Point> enemyPieces = GameScene.getAllPiecesOfColor(state, opponentColor);
 
         for(Point currentPiece:enemyPieces){
-            numberOfPossibleNextPositionsForOpponent += GameScene.getValidMoves(
+            numberOfPossibleNextPositionsForOpponent += ValidMovesFunctions.getValidMoves(
                     state,
                     currentPiece.getRow(),
                     currentPiece.getCol(),

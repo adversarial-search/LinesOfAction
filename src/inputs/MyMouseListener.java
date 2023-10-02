@@ -30,6 +30,9 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
                 case PLAYING_AGAINST_AI:
                     game.getPlayingAgainstAI().mouseClicked(e.getX(), e.getY());
                     break;
+                case AI_AGAINST_AI:
+                    game.getAIAgainstAI().mouseClicked(e.getX(), e.getY());
+                    break;
             }
         }
     }
@@ -46,6 +49,9 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
             case PLAYING_AGAINST_AI:
                 game.getPlayingAgainstAI().mouseMoved(e.getX(), e.getY());
                 break;
+            case AI_AGAINST_AI:
+                game.getAIAgainstAI().mouseMoved(e.getX(), e.getY());
+                break;
         }
     }
 
@@ -61,6 +67,9 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
             case PLAYING_AGAINST_AI:
                 game.getPlayingAgainstAI().mousePressed(e.getX(), e.getY());
                 break;
+            case AI_AGAINST_AI:
+                game.getAIAgainstAI().mousePressed(e.getX(), e.getY());
+                break;
         }
     }
 
@@ -75,6 +84,9 @@ public class MyMouseListener implements MouseListener, MouseMotionListener {
                 break;
             case PLAYING_AGAINST_AI:
                 game.getPlayingAgainstAI().mouseReleased(e.getX(), e.getY());
+                break;
+            case AI_AGAINST_AI:
+                game.getAIAgainstAI().mouseReleased(e.getX(), e.getY());
                 break;
         }
     }
