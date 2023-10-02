@@ -1,5 +1,6 @@
 package scenes;
 
+import assistants.Heuristics;
 import assistants.LevelBuild;
 import main.Game;
 import objects.Point;
@@ -356,20 +357,21 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
 
     private short evaluateState(byte[][] state, boolean isBlackTurn) {
         statesEvaluated+=1;
+
+        byte color = isBlackTurn ? B : W;
         //quirky winning case - don't ask
         {
             short specialWin = specialWinningCondition(state, isBlackTurn);
             if (specialWin != 0) return specialWin;
         }
 
-        short score = (short) (
-                          piecesPositionsScore(state, isBlackTurn)
-                        - getArea(state, isBlackTurn)
-                        - 15*countEnemyPieces ( state, isBlackTurn ) //?????
-                        - 0.3*numberOfOpponentsMoves(state,isBlackTurn)
+        return (short) (
+                          Heuristics.getScoreFromBoardPositions(state, color)
+                        + Heuristics.getNumConnectedPieces(state, color)
+                        - Heuristics.getArea(state, color)
+                        - Heuristics.getScoreFromNumEnemyPieces ( state, color )
+                        - Heuristics.numberOfOpponentsMoves(state, color)
         );
-
-        return score;
     }
     private short specialWinningCondition(byte[][] state, boolean isBlackTurn) {
         boolean blackWins = isWinningState(state, B);
@@ -387,112 +389,6 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
     }
     private boolean isWinningState(byte[][] state, byte color) {
         return allPiecesConnected ( state, color, getFirstPiece ( state, color ) );
-    }
-    private short piecesPositionsScore(byte[][] state, boolean isBlackTurn) {
-        byte color = isBlackTurn ? B : W;
-        short score = 0;
-
-        for (byte y = 0; y < 8; y++)
-            for (byte x = 0; x < 8; x++)
-                if (state[y][x] == color) score += (LevelBuild.positionsScore[y][x]);
-
-        return isBlackTurn ? score : (byte)(-1*score);
-    }
-    private short numberOfOpponentsMoves(byte[][] state, boolean isBlackTurn){
-        byte opponentColor = isBlackTurn?W:B;
-        byte playerColor = isBlackTurn?B:W;
-
-       short numberOfPossibleNextPositionsForOpponent = 0;
-
-       List<Point> enemyPieces = getAllPiecesOfColor(state,opponentColor);
-
-        for(Point currentPiece:enemyPieces){
-            numberOfPossibleNextPositionsForOpponent += getValidMoves(
-                                                                        state,
-                                                                        currentPiece.getRow(),
-                                                                        currentPiece.getCol(),
-                                                                        opponentColor,
-                                                                        playerColor
-                                                                ).size();
-        }
-
-        return isBlackTurn ? numberOfPossibleNextPositionsForOpponent : (short) (-1 * numberOfPossibleNextPositionsForOpponent);
-    }
-    private List<Point> getAllPiecesOfColor(byte[][] state, byte color){
-        List<Point> returnList = new ArrayList<>();
-
-        for(byte row = 0; row<8; row++){
-            for(byte column = 0; column<8; column++){
-                if(state[row][column]==color){
-                    returnList.add(new Point(row,column));
-                }
-            }
-        }
-
-        return returnList;
-    }
-    private byte getArea(byte[][] state, boolean isBlackTurn) {
-        byte color = isBlackTurn ? B : W;
-
-        byte height = (byte) (findBottomMostY(state, color) - findTopMostY(state, color));
-        byte width = (byte) (findRightMostX(state, color) - findLeftMostX(state, color));
-
-        return isBlackTurn? (byte) (height * width) : (byte) (-height * width);
-    }
-    private byte findLeftMostX(byte[][] state, byte color) {
-
-        for (byte col = 0; col < 8; col++) {
-            for (byte row = 7; row >= 0; row--) {
-                if (state[row][col] == color) {
-                    return col;
-                }
-            }
-        }
-        return -1;
-    }
-    private byte findRightMostX(byte[][] state, byte color) {
-
-
-        for (byte col = 7; col >= 0; col--) {
-            for (byte row = 7; row >= 0; row--) {
-                if (state[row][col] == color) {
-                    return col;
-                }
-            }
-        }
-        return -1;
-    }
-    private byte findBottomMostY(byte[][] state, byte color) {
-
-        for (byte row = 7; row >= 0; row--) {
-            for (byte col = 7; col >= 0; col--) {
-                if (state[row][col] == color) {
-                    return row;
-                }
-            }
-        }
-        return -1;
-    }
-    private byte findTopMostY(byte[][] state, byte color) {
-
-        for (byte row = 0; row < 8; row++) {
-            for (byte col = 0; col < 8; col++) {
-                if (state[row][col] == color) {
-                    return row;
-                }
-            }
-        }
-        return -1;
-    }
-    private byte countEnemyPieces(byte[][] state, boolean isBlackTurn){
-        byte colorToCount = isBlackTurn ? W : B;
-        byte colorCount = 0;
-        for (byte row = 0; row < 8; row++) 
-            for (byte col = 0; col < 8; col++)
-                if(state[row][col] == colorToCount)
-                    colorCount++;
-
-        return isBlackTurn ? LevelBuild.numPiecesScore[colorCount-1] : (byte)(-1*LevelBuild.numPiecesScore[colorCount-1]);
     }
 
 
