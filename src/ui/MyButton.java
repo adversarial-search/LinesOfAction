@@ -33,6 +33,13 @@ public class MyButton {
         drawText(g);
     }
 
+    public void drawTextOnly(Graphics g) {
+        //Text
+        g.setColor(Color.black);
+
+        drawText(g);
+    }
+
     private void drawBorder(Graphics g) {
         g.setColor(new Color(88, 69, 47));
         g.drawRect(x, y, width, height);

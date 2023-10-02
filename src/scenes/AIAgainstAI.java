@@ -32,7 +32,9 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
             bChooseAlphaBetaWhite,
             bChooseNoPruningBlack,
             bChooseAlphaBetaBlack,
-            bNextMove;
+            bNextMove,
+            drawTextPickWhiteAiType,
+            drawTextPickBlackAiType;
 
 
     public AIAgainstAI(Game game) {
@@ -55,6 +57,9 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
         bChooseAlphaBetaWhite = new MyButton("Alpha Beta MinMax", 192, 416, 256, 128);
         bChooseNoPruningBlack = new MyButton("Simple MinMax", 192, 128, 256, 128);
         bChooseAlphaBetaBlack = new MyButton("Alpha Beta MinMax", 192, 416, 256, 128);
+        drawTextPickWhiteAiType = new MyButton("Choose white ai type",192, 60, 256, 50);
+        drawTextPickBlackAiType = new MyButton("Choose black ai type",192, 60, 256, 50);
+
         bMenu = new MyButton("Menu", 14, 12, 100, 40);
         bReset = new MyButton("Reset", 128, 12, 100, 40);
         // TODO: Think of a better looking design for the next button
@@ -432,11 +437,21 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
         } else {
             if(!blackChosen) {
                 drawMenuBackground(g);
+                drawPickText(g,B);
                 drawChooseAiTypeButtonsBlack(g);
+
             } else{
                 drawMenuBackground(g);
+                drawPickText(g,W);
                 drawChooseAiTypeButtonsWhite(g);
             }
+        }
+    }
+    public void drawPickText(Graphics g,byte color){
+        if(color == W){
+            drawTextPickWhiteAiType.drawTextOnly(g);
+        }else{
+            drawTextPickBlackAiType.drawTextOnly(g);
         }
     }
     private void drawButtons(Graphics g) {
@@ -466,14 +481,19 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
             bMenu.setMouseOver(true);
         else if (bReset.getBounds().contains(x, y))
             bReset.setMouseOver(true);
-        else if (bChooseNoPruningWhite.getBounds().contains(x, y))
-            bChooseNoPruningWhite.setMouseOver(true);
-        else if (bChooseAlphaBetaWhite.getBounds().contains(x, y))
-            bChooseAlphaBetaWhite.setMouseOver(true);
         else if (bChooseNoPruningBlack.getBounds().contains(x, y))
             bChooseNoPruningBlack.setMouseOver(true);
         else if (bChooseAlphaBetaBlack.getBounds().contains(x, y))
             bChooseAlphaBetaBlack.setMouseOver(true);
+        else if (bNextMove.getBounds().contains(x, y))
+            bNextMove.setMouseOver(true);
+
+
+        if (bChooseNoPruningWhite.getBounds().contains(x, y))
+            bChooseNoPruningWhite.setMouseOver(true);
+        else if (bChooseAlphaBetaWhite.getBounds().contains(x, y))
+            bChooseAlphaBetaWhite.setMouseOver(true);
+
 
     }
 
@@ -516,12 +536,13 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
             bChooseNoPruningWhite.setMousePressed(true);
         else if (bChooseAlphaBetaWhite.getBounds().contains(x, y))
             bChooseAlphaBetaWhite.setMousePressed(true);
-        else if (bChooseNoPruningBlack.getBounds().contains(x, y))
+        else if (bNextMove.getBounds().contains(x, y))
+            bNextMove.setMousePressed(true);
+
+        if (bChooseNoPruningBlack.getBounds().contains(x, y))
             bChooseNoPruningBlack.setMousePressed(true);
         else if (bChooseAlphaBetaBlack.getBounds().contains(x, y))
             bChooseAlphaBetaBlack.setMousePressed(true);
-        else if (bNextMove.getBounds().contains(x, y))
-            bNextMove.setMousePressed(true);
 
     }
 
