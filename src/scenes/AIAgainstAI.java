@@ -57,7 +57,8 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
         bChooseAlphaBetaBlack = new MyButton("Alpha Beta MinMax", 192, 416, 256, 128);
         bMenu = new MyButton("Menu", 14, 12, 100, 40);
         bReset = new MyButton("Reset", 128, 12, 100, 40);
-        bNextMove = new MyButton("Next move",300,12,100,40);
+        // TODO: Think of a better looking design for the next button
+        bNextMove = new MyButton(">>",580,650,50,40);
     }
 
     private void makeAiMove(byte currentAiId) {
@@ -497,7 +498,7 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
             resetGame();
             return;
         }
-        else if(bNextMove.getBounds().contains(x,y)){
+        else if(bNextMove.getBounds().contains(x,y)&&!gameWon){
             makeNextMove();
             return;
         }
