@@ -1,23 +1,16 @@
 package scenes;
 
 import assistants.LevelBuild;
-import assistants.ValidMovesFunctions;
 import main.Game;
-import objects.Point;
-import objects.StateGenerationDTO;
 import ui.MyButton;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
-import java.util.function.Function;
 
-import static assistants.EvaluateStateFunctions.evaluateState;
-import static assistants.StateGenerationFunctions.getAllImmediateStates;
+import static assistants.MinMaxFunctions.getAlphaBetaMiniMaxState;
+import static assistants.MinMaxFunctions.getBasicMiniMaxState;
 import static main.GameStates.MENU;
 import static main.GameStates.SetGameState;
-// TODO : pull some of the duplicate code up both in AIvAI and PvAI
 // TODO : debug the clicking issues
 public class AIAgainstAI extends GameScene implements SceneMethods{
     private static final byte MAX_DEPTH_BASIC = 2;
@@ -73,160 +66,14 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
         byte aiType = currentAiId==W?whiteAiType:blackAiType;
 
         switch (aiType) {
-            case CLASSIC_MINMAX -> makeBasicMiniMaxMove(currentAiId);
-            case PRUNING_MINMAX -> makeAlphaBetaMiniMaxMove(currentAiId);
+            case CLASSIC_MINMAX ->
+                    piecesPositions = getBasicMiniMaxState(currentAiId,MAX_DEPTH_BASIC,piecesPositions);
+            case PRUNING_MINMAX ->
+                    piecesPositions = getAlphaBetaMiniMaxState(currentAiId,MAX_DEPTH_ALPHA_BETA,piecesPositions);
         }
 
         checkWinningConditions();
         changeTurn();
-    }
-    private void makeAlphaBetaMiniMaxMove(byte aiID){
-        ArrayList<byte[][]> bestMoves = new ArrayList<> (  );
-
-        if (aiID == W) {
-            short bestScore = Short.MAX_VALUE;
-            java.util.List<byte[][]> immediateStates = getAllImmediateStates(piecesPositions, false);
-
-            for (byte[][] state : immediateStates) {
-                short moveScore = miniMax(state, MAX_DEPTH_ALPHA_BETA, Short.MIN_VALUE, Short.MAX_VALUE, true, true);
-                if (moveScore < bestScore) {
-                    bestScore = moveScore;
-
-                    bestMoves = new ArrayList<> (  );
-                    bestMoves.add ( state );
-                }else if(moveScore == bestScore)
-                    bestMoves.add ( state );
-            }
-        } else {
-            short bestScore = Short.MIN_VALUE;
-            List<byte[][]> immediateStates = getAllImmediateStates(piecesPositions, true);
-            for (byte[][] state : immediateStates) {
-                short moveScore = miniMax(state, MAX_DEPTH_ALPHA_BETA, Short.MIN_VALUE, Short.MAX_VALUE, false, false);
-                if (moveScore > bestScore) {
-                    bestScore = moveScore;
-
-                    bestMoves = new ArrayList<> (  );
-                    bestMoves.add ( state );
-                }else if(moveScore == bestScore)
-                    bestMoves.add ( state );
-            }
-        }
-
-        System.out.println ( bestMoves.size () );
-        piecesPositions = bestMoves.get(random.nextInt ( bestMoves.size () ));
-    }
-    private short miniMax(byte[][] state, byte depth, short alpha, short beta, boolean isMax, boolean isBlackTurn){
-        byte playerPiece = isBlackTurn ? B : W;
-        byte opponentPiece = isBlackTurn ? W : B;
-
-        short stateScore = evaluateState ( state, !isBlackTurn );
-
-        if(depth == 0 || (short) (Math.abs(stateScore)) == Short.MAX_VALUE) return stateScore;
-
-        List<objects.Point> points = getAllPiecesOfColor ( state, playerPiece );
-        List<Function<StateGenerationDTO, objects.Point>> movementFunctions = ValidMovesFunctions.movementFunctions;
-        byte[][] nextState;
-        if(isMax) {
-            short highestScore = Short.MIN_VALUE;
-
-            for (objects.Point p : points) {
-                objects.Point positionToMoveTo;
-                StateGenerationDTO currentStateDTO = new StateGenerationDTO(state, p.getRow(), p.getCol(), opponentPiece, playerPiece);
-                for (Function<StateGenerationDTO, objects.Point> function : movementFunctions) {
-                    positionToMoveTo = function.apply(currentStateDTO);
-                    if (positionToMoveTo != null) {
-                        nextState = getStateFromMove(state, p, positionToMoveTo);
-
-                        highestScore = (short) Math.max(highestScore, miniMax(nextState, (byte) (depth - 1), alpha, beta, false, !isBlackTurn));
-
-                        alpha = (short) Math.max(alpha, highestScore);
-                        if (alpha >= beta) return highestScore;
-
-                    }
-                }
-            }
-            return highestScore;
-        }
-        else{
-            short lowestScore = Short.MAX_VALUE;
-
-            for(objects.Point p: points) {
-                objects.Point positionToMoveTo;
-                StateGenerationDTO currentStateDTO = new StateGenerationDTO(state, p.getRow(), p.getCol(), opponentPiece, playerPiece);
-                for (Function<StateGenerationDTO, Point> function : movementFunctions) {
-                    positionToMoveTo = function.apply(currentStateDTO);
-                    if (positionToMoveTo != null) {
-                        nextState = getStateFromMove(state, p, positionToMoveTo);
-
-                        lowestScore = (short) Math.min(lowestScore, miniMax(nextState, (byte) (depth - 1), alpha, beta, true, !isBlackTurn));
-
-                        beta = (short) Math.min(beta, lowestScore);
-                        if (alpha >= beta) return lowestScore;
-                    }
-                }
-            }
-
-            return lowestScore;
-        }
-
-    }
-
-
-    private void makeBasicMiniMaxMove(byte aiID){
-        ArrayList<byte[][]> bestMoves = new ArrayList<> (  );
-
-        if (aiID == W) {
-            short bestScore = Short.MAX_VALUE;
-            List<byte[][]> immediateStates = getAllImmediateStates(piecesPositions, false);
-
-            for (byte[][] state : immediateStates) {
-                short moveScore = miniMax(state, MAX_DEPTH_BASIC, true, true);
-                if (moveScore < bestScore) {
-                    bestScore = moveScore;
-
-                    bestMoves = new ArrayList<> (  );
-                    bestMoves.add ( state );
-                }else if(moveScore == bestScore){
-                    bestMoves.add ( state );
-                }
-            }
-        } else {
-            short bestScore = Short.MIN_VALUE;
-            List<byte[][]> immediateStates = getAllImmediateStates(piecesPositions, true);
-            for (byte[][] state : immediateStates) {
-                short moveScore = miniMax(state, MAX_DEPTH_BASIC, false, false);
-                if (moveScore > bestScore) {
-                    bestScore = moveScore;
-
-                    bestMoves = new ArrayList<> (  );
-                    bestMoves.add ( state );
-                }else if(moveScore == bestScore){
-                    bestMoves.add ( state );
-                }
-            }
-        }
-        System.out.println ( bestMoves.size () );
-        piecesPositions = bestMoves.get(random.nextInt ( bestMoves.size () ));
-    }
-    private short miniMax(byte[][] state, byte depth, boolean isMax, boolean isBlackTurn) {
-        short stateScore = evaluateState(state, !isBlackTurn);
-        if (depth == 0 || (short) (Math.abs(stateScore)) == Short.MAX_VALUE) return stateScore;
-
-        List<byte[][]> immediateStates = getAllImmediateStates(state, isBlackTurn);
-        if (immediateStates.isEmpty()) return stateScore;
-
-
-        if (isMax) { // this is a maximising node
-            short highestScore = Short.MIN_VALUE;
-            for (byte[][] immediateState : immediateStates)
-                highestScore = (short) Math.max(highestScore, miniMax(immediateState, (byte) (depth - 1), false, !isBlackTurn));
-            return highestScore;
-        } else {
-            short lowestScore = Short.MAX_VALUE;
-            for (byte[][] immediateState : immediateStates)
-                lowestScore = (short) Math.min(lowestScore, miniMax(immediateState, (byte) (depth - 1), true, !isBlackTurn));
-            return lowestScore;
-        }
     }
 
 

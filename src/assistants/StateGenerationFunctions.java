@@ -1,14 +1,16 @@
 package assistants;
 
 import objects.Point;
-import scenes.GameScene;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static assistants.LevelBuild.*;
+import static assistants.LevelBuild.B;
+import static assistants.LevelBuild.W;
 
 public class StateGenerationFunctions {
+
+    private static final byte E = 2;
 
     public static List<byte[][]> getAllImmediateStates(byte[][] state, boolean isBlackMove) {
         ArrayList<byte[][]> states = new ArrayList<>();
@@ -38,5 +40,14 @@ public class StateGenerationFunctions {
             immediateStates.add(nextState);
         }
         return immediateStates;
+    }
+
+    public static byte[][] getStateFromMove(byte[][] state, Point pieceToMove, Point positionToMoveTo){
+        byte[][] stateClone = new byte[8][];
+        for(byte x = 0; x < 8; x++) stateClone[x] = state[x].clone ();
+
+        stateClone[positionToMoveTo.getRow ()][positionToMoveTo.getCol ()] = stateClone[pieceToMove.getRow ()][pieceToMove.getCol ()];
+        stateClone[pieceToMove.getRow ()][pieceToMove.getCol ()] = E;
+        return stateClone;
     }
 }

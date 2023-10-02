@@ -1,12 +1,12 @@
 package assistants;
-import objects.Point;
 
-import java.util.ArrayList;
+import objects.Point;
+import scenes.GameScene;
+
 import java.util.List;
 
 import static assistants.LevelBuild.B;
 import static assistants.LevelBuild.W;
-import scenes.GameScene;
 
 public class Heuristics {
     public static short getScoreFromBoardPositions(byte[][] state, byte color){

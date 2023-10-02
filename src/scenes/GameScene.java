@@ -5,7 +5,6 @@ import assistants.ValidMovesFunctions;
 import main.Game;
 import managers.TileManager;
 import objects.Point;
-import objects.StateGenerationDTO;
 
 import java.awt.*;
 import java.util.ArrayDeque;
@@ -59,14 +58,6 @@ public abstract class GameScene {
             } else
                 resetValidMovesAndActivePiece();
         }
-    }
-    protected byte[][] getStateFromMove(byte[][] state, Point pieceToMove, Point positionToMoveTo){
-        byte[][] stateClone = new byte[8][];
-        for(byte x = 0; x < 8; x++) stateClone[x] = state[x].clone ();
-
-        stateClone[positionToMoveTo.getRow ()][positionToMoveTo.getCol ()] = stateClone[pieceToMove.getRow ()][pieceToMove.getCol ()];
-        stateClone[pieceToMove.getRow ()][pieceToMove.getCol ()] = E;
-        return stateClone;
     }
     protected boolean movedPieceToValidPosition(Point selectedPiece, byte playersPiece) {
         if (validMoves.contains(selectedPiece))
