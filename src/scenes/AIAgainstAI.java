@@ -7,8 +7,8 @@ import ui.MyButton;
 import java.awt.*;
 import java.util.Random;
 
-import static assistants.MinMaxFunctions.getAlphaBetaMiniMaxState;
-import static assistants.MinMaxFunctions.getBasicMiniMaxState;
+import static assistants.MinMaxFunctions.makeBasicMiniMaxMove;
+import static assistants.MinMaxFunctions.makeAlphaBetaMiniMaxMove;
 import static main.GameStates.MENU;
 import static main.GameStates.SetGameState;
 // TODO : debug the clicking issues
@@ -67,9 +67,9 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
 
         switch (aiType) {
             case CLASSIC_MINMAX ->
-                    piecesPositions = getBasicMiniMaxState(currentAiId,MAX_DEPTH_BASIC,piecesPositions);
+                      makeBasicMiniMaxMove(currentAiId,MAX_DEPTH_BASIC,piecesPositions);
             case PRUNING_MINMAX ->
-                    piecesPositions = getAlphaBetaMiniMaxState(currentAiId,MAX_DEPTH_ALPHA_BETA,piecesPositions);
+                      makeAlphaBetaMiniMaxMove(currentAiId,MAX_DEPTH_ALPHA_BETA,piecesPositions);
         }
 
         checkWinningConditions();

@@ -2,6 +2,7 @@ package assistants;
 
 import objects.Point;
 import objects.StateGenerationDTO;
+import scenes.GameScene;
 import scenes.PlayingAgainstAI;
 
 import java.util.ArrayList;
@@ -19,7 +20,7 @@ public class MinMaxFunctions {
     private static final Random random = new Random ( );
     private static final byte B = 1;
 
-    public static byte[][] getAlphaBetaMiniMaxState(byte id,byte depth,byte [][]initialState){
+    public static void makeAlphaBetaMiniMaxMove(byte id,byte depth,byte [][]initialState){
         ArrayList<byte[][]> bestMoves = new ArrayList<> (  );
 
         if (id == W) {
@@ -52,7 +53,7 @@ public class MinMaxFunctions {
         }
 
         System.out.println ( bestMoves.size () );
-         return bestMoves.get(random.nextInt ( bestMoves.size () ));
+         GameScene.piecesPositions = bestMoves.get(random.nextInt ( bestMoves.size () ));
     }
     private static short miniMax(byte[][] state, byte depth, short alpha, short beta, boolean isMax, boolean isBlackTurn){
         byte playerPiece = isBlackTurn ? B : W;
@@ -112,7 +113,7 @@ public class MinMaxFunctions {
     }
 
 
-    public static byte[][] getBasicMiniMaxState(byte id,byte depth,byte [][]initialState){
+    public static void makeBasicMiniMaxMove(byte id,byte depth,byte [][]initialState){
         ArrayList<byte[][]> bestMoves = new ArrayList<> (  );
 
         if (id == W) {
@@ -146,7 +147,7 @@ public class MinMaxFunctions {
             }
         }
         System.out.println ( bestMoves.size () );
-        return bestMoves.get(random.nextInt ( bestMoves.size () ));
+        GameScene.piecesPositions= bestMoves.get(random.nextInt ( bestMoves.size () ));
     }
     private static short miniMax(byte[][] state, byte depth, boolean isMax, boolean isBlackTurn) {
         short stateScore = evaluateState(state, !isBlackTurn);
@@ -169,4 +170,5 @@ public class MinMaxFunctions {
             return lowestScore;
         }
     }
-}
+
+    }

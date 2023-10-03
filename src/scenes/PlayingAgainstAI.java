@@ -7,8 +7,9 @@ import ui.MyButton;
 import java.awt.*;
 import java.util.Random;
 
-import static assistants.MinMaxFunctions.getAlphaBetaMiniMaxState;
-import static assistants.MinMaxFunctions.getBasicMiniMaxState;
+import static assistants.MinMaxFunctions.makeAlphaBetaMiniMaxMove;
+import static assistants.MinMaxFunctions.makeBasicMiniMaxMove;
+import static assistants.ZobristHashing.getZobristKeyForPosition;
 import static main.GameStates.MENU;
 import static main.GameStates.SetGameState;
 
@@ -191,9 +192,9 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
     private void makeAiMove() {
         switch (aiType) {
             case CLASSIC_MINMAX ->
-                piecesPositions = getBasicMiniMaxState(aiID,MAX_DEPTH_BASIC,piecesPositions);
+                    makeBasicMiniMaxMove(aiID,MAX_DEPTH_BASIC,piecesPositions);
             case PRUNING_MINMAX ->
-                    piecesPositions = getAlphaBetaMiniMaxState(aiID,MAX_DEPTH_ALPHA_BETA,piecesPositions);
+                    makeAlphaBetaMiniMaxMove(aiID,MAX_DEPTH_ALPHA_BETA,piecesPositions);
         }
 
         checkWinningConditions();
