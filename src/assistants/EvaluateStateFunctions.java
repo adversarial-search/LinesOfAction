@@ -20,6 +20,7 @@ public class EvaluateStateFunctions {
         return (short) (
                 Heuristics.getScoreFromBoardPositions(state, color)
                         + Heuristics.getNumConnectedPieces(state, color)
+                        - Heuristics.getDensityScore(state, color)
                         - Heuristics.getArea(state, color)
                         - Heuristics.getScoreFromNumEnemyPieces ( state, color )
                         - Heuristics.numberOfOpponentsMoves(state, color)
