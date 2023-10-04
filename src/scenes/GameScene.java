@@ -29,7 +29,7 @@ public abstract class GameScene {
 
 
     protected void setValidMovesAndActivePiece(byte row, byte col, byte opponentPiece, byte playersPiece) {
-        validMoves = ValidMovesFunctions.getValidMoves(piecesPositions, row, col, opponentPiece, playersPiece);
+        validMoves = ValidMovesFunctions.getValidMovesAsPoints(piecesPositions, row, col, opponentPiece, playersPiece);
         activePiece = new Point(row, col);
     }
 

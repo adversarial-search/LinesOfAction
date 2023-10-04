@@ -1,5 +1,6 @@
 package assistants;
 
+import objects.Move;
 import objects.Point;
 import objects.StateGenerationDTO;
 
@@ -10,19 +11,35 @@ import java.util.function.Function;
 public class ValidMovesFunctions {
     public static final byte E = 2;
     public static final List<Function<StateGenerationDTO,Point>> movementFunctions = getMovementFunctions();
-    public static ArrayList<Point> getValidMoves(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece) {
-        ArrayList<Point> tempValidMoves = new ArrayList<>();
-        Point p;
+    public static ArrayList<Move> getValidMoves(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece) {
+        ArrayList<Move> validMoves = new ArrayList<>();
+        Point targetSquare;
 
         StateGenerationDTO currentStateDTO = new StateGenerationDTO(state,row,col, opponentPiece, playersPiece);
+        Point startingSquare = new Point(row, col);
         for (Function<StateGenerationDTO, Point> function : movementFunctions) {
-            p = function.apply(currentStateDTO);
-            if (p != null) {
-                tempValidMoves.add(p);
+            targetSquare = function.apply(currentStateDTO);
+            if (targetSquare != null) {
+                validMoves.add(new Move(startingSquare,targetSquare));
             }
         }
 
-        return tempValidMoves;
+        return validMoves;
+    }
+
+    public static ArrayList<Point> getValidMovesAsPoints(byte[][] state, byte row, byte col, byte opponentPiece, byte playersPiece){
+        ArrayList<Point> validMoves = new ArrayList<>();
+        Point targetSquare;
+
+        StateGenerationDTO currentStateDTO = new StateGenerationDTO(state,row,col, opponentPiece, playersPiece);
+        for (Function<StateGenerationDTO, Point> function : movementFunctions) {
+            targetSquare = function.apply(currentStateDTO);
+            if (targetSquare != null) {
+                validMoves.add(targetSquare);
+            }
+        }
+
+        return validMoves;
     }
 
     private static List<Function<StateGenerationDTO,Point>> getMovementFunctions(){
