@@ -7,6 +7,7 @@ import static assistants.LevelBuild.B;
 import static assistants.LevelBuild.W;
 
 public class ZobristHashing {
+    // TODO: fix runtime issues
 
     //3 bits for the depth , one bit for turn (0 is white 1 is black) , and 28 bits for the position.
     // total of 32 bits for the key (int data type is enough)
@@ -35,19 +36,17 @@ public class ZobristHashing {
         int returnValue = 0;
         for(byte row = 0; row < 8; row++ ){
             for(byte column = 0; column<8;column++){
-                returnValue+= getValueOfSquare(row,column,state[row][column]);
+                returnValue ^= getValueOfSquare(row,column,state[row][column]);
             }
         }
-        //we clear the leading bits with modulo
-        returnValue = returnValue % 268435456;
 
         //we add a leading bit if black is to move in the position
-        returnValue+=color==W? 0:268435456;
+        returnValue ^=color==W? 0:268435456;
 
         //we add leading bits for depth;
         byte bitsToShift = (byte)(32 - Math.ceil(Math.log(depth)/Math.log(2)));
 
-        returnValue += Math.pow(2,bitsToShift);
+        returnValue ^= (int)Math.pow(2,bitsToShift);
 
         return returnValue;
     }

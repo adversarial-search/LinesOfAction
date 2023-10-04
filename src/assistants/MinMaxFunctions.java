@@ -14,12 +14,20 @@ import static assistants.LevelBuild.W;
 import static assistants.StateGenerationFunctions.getAllImmediateStates;
 import static assistants.StateGenerationFunctions.getStateFromMove;
 import static scenes.GameScene.getAllPiecesOfColor;
+import static scenes.GameScene.piecesPositions;
 
 public class MinMaxFunctions {
     private static final Random random = new Random ( );
     private static final byte B = 1;
 
-    public static void makeAlphaBetaMiniMaxMove(byte id,byte depth,byte [][]initialState){
+    public static void makeAlphaBetaMiniMaxMove(byte id,byte depth,byte [][]initialState,boolean usesTranspositionTable){
+        if(usesTranspositionTable){
+            Move moveFromTable = TranspositionTable.getMoveFromTable(initialState,id,depth);
+            if(moveFromTable!=null){
+                GameScene.piecesPositions = getStateFromMove(initialState,moveFromTable.getStarPositionOfPiece(),moveFromTable.getTargetPositionOfPiece());
+                return;
+            }
+        }
         ArrayList<MoveAndResultingStateObject> bestMoves = new ArrayList<> (  );
 
         if (id == W) {
@@ -51,7 +59,12 @@ public class MinMaxFunctions {
 
         System.out.println ( bestMoves.size () );
 
-        GameScene.piecesPositions =bestMoves.get(random.nextInt ( bestMoves.size () )).getResultingState();
+        MoveAndResultingStateObject chosenState = bestMoves.get(random.nextInt ( bestMoves.size () ));
+
+        if(usesTranspositionTable)
+        TranspositionTable.addMoveToTable(initialState,id,depth,chosenState.getMove());
+
+        GameScene.piecesPositions =chosenState.getResultingState();
     }
     private static short miniMax(byte[][] state, byte depth, short alpha, short beta, boolean isMax, boolean isBlackTurn){
         byte playerPiece = isBlackTurn ? B : W;
@@ -111,7 +124,15 @@ public class MinMaxFunctions {
     }
 
 
-    public static void makeBasicMiniMaxMove(byte id,byte depth,byte [][]initialState){
+    public static void makeBasicMiniMaxMove(byte id,byte depth,byte [][]initialState,boolean usesTranspositionTable){
+        if(usesTranspositionTable){
+            Move moveFromTable = TranspositionTable.getMoveFromTable(initialState,id,depth);
+            if(moveFromTable!=null){
+                GameScene.piecesPositions = getStateFromMove(initialState,moveFromTable.getStarPositionOfPiece(),moveFromTable.getTargetPositionOfPiece());
+                return;
+            }
+        }
+
         ArrayList<MoveAndResultingStateObject> bestMoves = new ArrayList<> (  );
 
         if (id == W) {
@@ -145,7 +166,12 @@ public class MinMaxFunctions {
             }
         }
         System.out.println ( bestMoves.size () );
-        GameScene.piecesPositions= bestMoves.get(random.nextInt ( bestMoves.size () )).getResultingState();
+        MoveAndResultingStateObject chosenState = bestMoves.get(random.nextInt ( bestMoves.size () ));
+
+        if(usesTranspositionTable)
+            TranspositionTable.addMoveToTable(initialState,id,depth,chosenState.getMove());
+
+        GameScene.piecesPositions =chosenState.getResultingState();
     }
     private static short miniMax(byte[][] state, byte depth, boolean isMax, boolean isBlackTurn) {
         short stateScore = evaluateState(state, !isBlackTurn);

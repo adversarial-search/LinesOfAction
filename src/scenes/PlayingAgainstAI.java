@@ -192,9 +192,9 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
     private void makeAiMove() {
         switch (aiType) {
             case CLASSIC_MINMAX ->
-                    makeBasicMiniMaxMove(aiID,MAX_DEPTH_BASIC,piecesPositions);
+                    makeBasicMiniMaxMove(aiID,MAX_DEPTH_BASIC,piecesPositions,true);
             case PRUNING_MINMAX ->
-                    makeAlphaBetaMiniMaxMove(aiID,MAX_DEPTH_ALPHA_BETA,piecesPositions);
+                    makeAlphaBetaMiniMaxMove(aiID,MAX_DEPTH_ALPHA_BETA,piecesPositions,true);
         }
 
         checkWinningConditions();
