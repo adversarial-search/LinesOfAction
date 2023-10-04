@@ -87,7 +87,7 @@ public class Heuristics {
                 if (state[y][x] == color)
                     distance += Math.max(Math.abs(centerX - x), Math.abs(centerY - y));
 
-        return (color==W)? (short) (-1 * distance) :distance;
+        return (color == W) ? (short) (-1 * distance) : distance;
     }
 
 

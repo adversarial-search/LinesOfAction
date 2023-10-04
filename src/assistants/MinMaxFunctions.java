@@ -16,11 +16,11 @@ import static assistants.StateGenerationFunctions.getStateFromMove;
 import static scenes.GameScene.getAllPiecesOfColor;
 
 public class MinMaxFunctions {
-    private static final Random random = new Random ( );
+    private static final Random random = new Random();
     private static final byte B = 1;
 
-    public static byte[][] getAlphaBetaMiniMaxState(byte id,byte depth,byte [][]initialState){
-        ArrayList<byte[][]> bestMoves = new ArrayList<> (  );
+    public static byte[][] getAlphaBetaMiniMaxState(byte id, byte depth, byte[][] initialState) {
+        ArrayList<byte[][]> bestMoves = new ArrayList<>();
 
         if (id == W) {
             short bestScore = Short.MAX_VALUE;
@@ -31,10 +31,10 @@ public class MinMaxFunctions {
                 if (moveScore < bestScore) {
                     bestScore = moveScore;
 
-                    bestMoves = new ArrayList<> (  );
-                    bestMoves.add ( state );
-                }else if(moveScore == bestScore)
-                    bestMoves.add ( state );
+                    bestMoves = new ArrayList<>();
+                    bestMoves.add(state);
+                } else if (moveScore == bestScore)
+                    bestMoves.add(state);
             }
         } else {
             short bestScore = Short.MIN_VALUE;
@@ -44,29 +44,29 @@ public class MinMaxFunctions {
                 if (moveScore > bestScore) {
                     bestScore = moveScore;
 
-                    bestMoves = new ArrayList<> (  );
-                    bestMoves.add ( state );
-                }else if(moveScore == bestScore)
-                    bestMoves.add ( state );
+                    bestMoves = new ArrayList<>();
+                    bestMoves.add(state);
+                } else if (moveScore == bestScore)
+                    bestMoves.add(state);
             }
         }
 
-        System.out.println ( bestMoves.size () );
-         return bestMoves.get(random.nextInt ( bestMoves.size () ));
+        return bestMoves.get(random.nextInt(bestMoves.size()));
     }
-    private static short miniMax(byte[][] state, byte depth, short alpha, short beta, boolean isMax, boolean isBlackTurn){
+
+    private static short miniMax(byte[][] state, byte depth, short alpha, short beta, boolean isMax, boolean isBlackTurn) {
         byte playerPiece = isBlackTurn ? B : W;
         byte opponentPiece = isBlackTurn ? W : B;
 
-        short stateScore = evaluateState ( state, !isBlackTurn );
+        short stateScore = evaluateState(state, !isBlackTurn);
         PlayingAgainstAI.incrementStatesEvaluated();
 
-        if(depth == 0 || (short) (Math.abs(stateScore)) == Short.MAX_VALUE) return stateScore;
+        if (depth == 0 || (short) (Math.abs(stateScore)) == Short.MAX_VALUE) return stateScore;
 
-        List<Point> points = getAllPiecesOfColor ( state, playerPiece );
-        List<Function<StateGenerationDTO,Point>> movementFunctions = ValidMovesFunctions.movementFunctions;
+        List<Point> points = getAllPiecesOfColor(state, playerPiece);
+        List<Function<StateGenerationDTO, Point>> movementFunctions = ValidMovesFunctions.movementFunctions;
         byte[][] nextState;
-        if(isMax) {
+        if (isMax) {
             short highestScore = Short.MIN_VALUE;
 
             for (Point p : points) {
@@ -86,11 +86,10 @@ public class MinMaxFunctions {
                 }
             }
             return highestScore;
-        }
-        else{
+        } else {
             short lowestScore = Short.MAX_VALUE;
 
-            for(Point p: points) {
+            for (Point p : points) {
                 Point positionToMoveTo;
                 StateGenerationDTO currentStateDTO = new StateGenerationDTO(state, p.getRow(), p.getCol(), opponentPiece, playerPiece);
                 for (Function<StateGenerationDTO, Point> function : movementFunctions) {
@@ -112,8 +111,8 @@ public class MinMaxFunctions {
     }
 
 
-    public static byte[][] getBasicMiniMaxState(byte id,byte depth,byte [][]initialState){
-        ArrayList<byte[][]> bestMoves = new ArrayList<> (  );
+    public static byte[][] getBasicMiniMaxState(byte id, byte depth, byte[][] initialState) {
+        ArrayList<byte[][]> bestMoves = new ArrayList<>();
 
         if (id == W) {
             short bestScore = Short.MAX_VALUE;
@@ -124,10 +123,10 @@ public class MinMaxFunctions {
                 if (moveScore < bestScore) {
                     bestScore = moveScore;
 
-                    bestMoves = new ArrayList<> (  );
-                    bestMoves.add ( state );
-                }else if(moveScore == bestScore){
-                    bestMoves.add ( state );
+                    bestMoves = new ArrayList<>();
+                    bestMoves.add(state);
+                } else if (moveScore == bestScore) {
+                    bestMoves.add(state);
                 }
             }
         } else {
@@ -138,16 +137,21 @@ public class MinMaxFunctions {
                 if (moveScore > bestScore) {
                     bestScore = moveScore;
 
-                    bestMoves = new ArrayList<> (  );
-                    bestMoves.add ( state );
-                }else if(moveScore == bestScore){
-                    bestMoves.add ( state );
+                    bestMoves = new ArrayList<>();
+                    bestMoves.add(state);
+                } else if (moveScore == bestScore) {
+                    bestMoves.add(state);
                 }
             }
         }
-        System.out.println ( bestMoves.size () );
-        return bestMoves.get(random.nextInt ( bestMoves.size () ));
+        //TODO: check what happened here and if this was the cause of some Exception that was thrown
+        if(bestMoves.isEmpty()){
+            System.out.println("NO VALID MOVES");
+            System.exit(0);
+        }
+        return bestMoves.get(random.nextInt(bestMoves.size()));
     }
+
     private static short miniMax(byte[][] state, byte depth, boolean isMax, boolean isBlackTurn) {
         short stateScore = evaluateState(state, !isBlackTurn);
         PlayingAgainstAI.incrementStatesEvaluated();

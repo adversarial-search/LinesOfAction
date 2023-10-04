@@ -22,26 +22,28 @@ public class EvaluateStateFunctions {
                         + Heuristics.getNumConnectedPieces(state, color)
                         - Heuristics.getDensityScore(state, color)
                         - Heuristics.getArea(state, color)
-                        - Heuristics.getScoreFromNumEnemyPieces ( state, color )
+                        - Heuristics.getScoreFromNumEnemyPieces(state, color)
                         - Heuristics.numberOfOpponentsMoves(state, color)
         );
     }
+
     public static short specialWinningCondition(byte[][] state, boolean isBlackTurn) {
         boolean blackWins = isWinningState(state, B);
         boolean whiteWins = isWinningState(state, W);
 
 
-        if(blackWins && whiteWins) return isBlackTurn ? Short.MAX_VALUE : Short.MIN_VALUE;
+        if (blackWins && whiteWins) return isBlackTurn ? Short.MAX_VALUE : Short.MIN_VALUE;
 
 
-        if(blackWins) return Short.MAX_VALUE;
-        if(whiteWins) return Short.MIN_VALUE;
+        if (blackWins) return Short.MAX_VALUE;
+        if (whiteWins) return Short.MIN_VALUE;
 
 
         return 0;
     }
+
     public static boolean isWinningState(byte[][] state, byte color) {
-        return allPiecesConnected ( state, color, getFirstPiece ( state, color ) );
+        return allPiecesConnected(state, color, getFirstPiece(state, color));
     }
 
 }
