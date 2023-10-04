@@ -1,5 +1,8 @@
 package scenes;
 
+import AITypes.AIType;
+import AITypes.AlphaBetaMinMaxAi;
+import AITypes.ClassicMinMaxAi;
 import assistants.LevelBuild;
 import main.Game;
 import ui.MyButton;
@@ -15,12 +18,13 @@ import static main.GameStates.SetGameState;
 
 public class PlayingAgainstAI extends GameScene implements SceneMethods {
     //  TODO try make global opponents piece and player piece instead of figuring it out in every function (this is fine now so I think we should remove this TODO)
-    private static byte MAX_DEPTH_BASIC = 0;
-    private static byte MAX_DEPTH_ALPHA_BETA = 0;
+    private static byte MAX_DEPTH = 0;
     private static boolean idIsChosen = false;
     private static boolean aiTypeIsChosen = false;
-    private static byte playerID, aiID, aiType;
+    private static byte playerID,aiID;
+    private static AIType aiType;
     public static int statesEvaluated = 0, showNumStatesEvaluated;
+    public static boolean useTranspositionTable = true;
     private static final Random random = new Random ( );
     Game game;
     private MyButton
@@ -104,7 +108,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             g.setColor ( new Color ( 88, 69, 47 ) );
             g.drawRect ( 356, 12, 40, 40 );
 
-            String depthStr = aiType == PRUNING_MINMAX ? String.valueOf ( MAX_DEPTH_ALPHA_BETA ) : String.valueOf ( MAX_DEPTH_BASIC );
+            String depthStr = String.valueOf(MAX_DEPTH);
             g.drawString ( depthStr, 372, 37 );
 
             g.setColor ( new Color ( 168, 212, 190 ) );
@@ -148,11 +152,11 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
     }
     private void chooseAiType(int x, int y){
         if(bChooseAlphaBeta.getBounds().contains(x,y)){
-            aiType=PRUNING_MINMAX;
+            aiType= new AlphaBetaMinMaxAi();
             aiTypeIsChosen=true;
         }
         else if(bChooseNoPruning.getBounds().contains(x,y)){
-            aiType=CLASSIC_MINMAX;
+            aiType= new ClassicMinMaxAi();
             aiTypeIsChosen=true;
         }
     }
@@ -166,8 +170,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         aiTypeIsChosen=false;
         playerID = -1;
         aiID = -1;
-        MAX_DEPTH_BASIC = 0;
-        MAX_DEPTH_ALPHA_BETA = 0;
+        MAX_DEPTH=0;
         statesEvaluated = 0;
         showNumStatesEvaluated = 0;
     }
@@ -190,12 +193,13 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         }
     }
     private void makeAiMove() {
-        switch (aiType) {
-            case CLASSIC_MINMAX ->
-                    makeBasicMiniMaxMove(aiID,MAX_DEPTH_BASIC,piecesPositions,true);
-            case PRUNING_MINMAX ->
-                    makeAlphaBetaMiniMaxMove(aiID,MAX_DEPTH_ALPHA_BETA,piecesPositions,true);
+        if(useTranspositionTable){
+            aiType.makeMoveWithTranspositionTable(aiID,MAX_DEPTH,piecesPositions);
         }
+        else{
+            aiType.makeMove(aiID,MAX_DEPTH,piecesPositions);
+        }
+
 
         checkWinningConditions();
         changeTurn();
@@ -237,16 +241,10 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         makeMove(x, y);
     }
     private void increaseDepth () {
-        if(aiType == PRUNING_MINMAX)
-            MAX_DEPTH_ALPHA_BETA = (byte) Math.min( MAX_DEPTH_ALPHA_BETA+1, 3 );
-        else if(aiType == CLASSIC_MINMAX)
-            MAX_DEPTH_BASIC = (byte) Math.min ( MAX_DEPTH_BASIC+1, 3 );
+            MAX_DEPTH= (byte) Math.min ( MAX_DEPTH+1, 3 );
     }
     private void decreaseDepth () {
-        if(aiType == PRUNING_MINMAX)
-            MAX_DEPTH_ALPHA_BETA = (byte) Math.max( MAX_DEPTH_ALPHA_BETA-1, 0 );
-        else if(aiType == CLASSIC_MINMAX)
-            MAX_DEPTH_BASIC = (byte) Math.max ( MAX_DEPTH_BASIC-1, 0 );
+            MAX_DEPTH = (byte) Math.max ( MAX_DEPTH-1, 0 );
     }
 
 

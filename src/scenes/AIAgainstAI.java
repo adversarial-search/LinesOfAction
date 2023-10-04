@@ -1,5 +1,8 @@
 package scenes;
 
+import AITypes.AIType;
+import AITypes.AlphaBetaMinMaxAi;
+import AITypes.ClassicMinMaxAi;
 import assistants.LevelBuild;
 import main.Game;
 import ui.MyButton;
@@ -13,12 +16,11 @@ import static main.GameStates.MENU;
 import static main.GameStates.SetGameState;
 // TODO : debug the clicking issues
 public class AIAgainstAI extends GameScene implements SceneMethods{
-    private static final byte MAX_DEPTH_BASIC = 2;
-    private static final byte MAX_DEPTH_ALPHA_BETA = 2;
+    private static final byte MAX_DEPTH=2;
     protected static boolean whiteChosen = false;
     protected static boolean blackChosen = false;
-    protected byte whiteAiType;
-    protected byte blackAiType;
+    protected AIType whiteAiType;
+    protected AIType blackAiType;
     private static final Random random = new Random ( );
 
     private MyButton
@@ -63,14 +65,9 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
     }
 
     private void makeAiMove(byte currentAiId) {
-        byte aiType = currentAiId==W?whiteAiType:blackAiType;
+        AIType currentAI = currentAiId==W?whiteAiType:blackAiType;
 
-        switch (aiType) {
-            case CLASSIC_MINMAX ->
-                      makeBasicMiniMaxMove(currentAiId,MAX_DEPTH_BASIC,piecesPositions,true);
-            case PRUNING_MINMAX ->
-                      makeAlphaBetaMiniMaxMove(currentAiId,MAX_DEPTH_ALPHA_BETA,piecesPositions,true);
-        }
+        currentAI.makeMove(currentAiId,MAX_DEPTH,piecesPositions);
 
         checkWinningConditions();
         changeTurn();
@@ -237,22 +234,22 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
     }
     private void chooseWhiteAiType(int x, int y){
         if(bChooseAlphaBetaWhite.getBounds().contains(x,y)){
-            whiteAiType=PRUNING_MINMAX;
+            whiteAiType= new AlphaBetaMinMaxAi();
             whiteChosen=true;
         }
         else if(bChooseNoPruningWhite.getBounds().contains(x,y)){
-            whiteAiType=CLASSIC_MINMAX;
+            whiteAiType=new ClassicMinMaxAi();
             whiteChosen=true;
         }
     }
 
     private void chooseBlackAiType(int x, int y){
         if(bChooseAlphaBetaBlack.getBounds().contains(x,y)){
-            blackAiType=PRUNING_MINMAX;
+            blackAiType=new AlphaBetaMinMaxAi();
             blackChosen=true;
         }
         else if(bChooseNoPruningBlack.getBounds().contains(x,y)){
-            blackAiType=CLASSIC_MINMAX;
+            blackAiType=new ClassicMinMaxAi();
             blackChosen=true;
         }
     }
