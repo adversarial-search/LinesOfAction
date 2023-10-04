@@ -56,6 +56,7 @@ public class Game extends JFrame implements Runnable {
         aiAgainstAI = new AIAgainstAI(this);
         playingAgainstAI = new PlayingAgainstAI(this);
         playingAgainstPerson = new PlayingAgainstPerson(this);
+
     }
 
     // Getters and setters

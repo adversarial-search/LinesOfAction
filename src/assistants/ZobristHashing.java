@@ -1,6 +1,7 @@
 package assistants;
 
 import java.sql.SQLOutput;
+import java.util.Objects;
 import java.util.Random;
 
 import static assistants.LevelBuild.B;
@@ -12,19 +13,19 @@ public class ZobristHashing {
     //3 bits for the depth , one bit for turn (0 is white 1 is black) , and 28 bits for the position.
     // total of 32 bits for the key (int data type is enough)
 
-    public static final Integer[][] hashingMatrixWhite=fillHashingMatrix();
-    public static final Integer[][] hashingMatrixBlack=fillHashingMatrix();
+    public static int[][] hashingMatrixWhite=fillHashingMatrix();
+    public static int[][] hashingMatrixBlack=fillHashingMatrix();
 
-    public static Random random = new Random();
+    public static int[][] fillHashingMatrix(){
+        int[][] filledMatrix = new int[8][8];
 
-    public static Integer[][] fillHashingMatrix(){
-        Integer[][] filledMatrix = new Integer[8][8];
-
-        for(Integer[] row: filledMatrix){
-            for(byte i=0; i< 8;i++){
+        for(byte row = 0; row< 8;row++){
+            for(byte column=0; column < 8;column++){
+                //268435456
+                Random random = new Random();
                 int randomlyGenNumber = random.nextInt(0,268435456);
                 System.out.print(randomlyGenNumber+" ");
-                row[i]= randomlyGenNumber;
+                filledMatrix[row][column]= randomlyGenNumber;
             }
             System.out.println();
         }
