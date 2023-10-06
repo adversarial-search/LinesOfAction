@@ -23,7 +23,6 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
     private static boolean aiTypeIsChosen = false;
     private static byte playerID,aiID;
     private static AIType aiType;
-    public static int statesEvaluated = 0, showNumStatesEvaluated;
     public static boolean useTranspositionTable = true;
     private static final Random random = new Random ( );
     Game game;
@@ -207,9 +206,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         showNumStatesEvaluated = statesEvaluated;
         statesEvaluated=0;
     }
-    public static void incrementStatesEvaluated(){
-        statesEvaluated+=1;
-    }
+
     @Override
     public void mouseClicked(int x, int y) {
         //choose IDs
@@ -241,7 +238,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         makeMove(x, y);
     }
     private void increaseDepth () {
-            MAX_DEPTH= (byte) Math.min ( MAX_DEPTH+1, 3 );
+            MAX_DEPTH= (byte) Math.min ( MAX_DEPTH+1, 4 );
     }
     private void decreaseDepth () {
             MAX_DEPTH = (byte) Math.max ( MAX_DEPTH-1, 0 );
@@ -268,14 +265,15 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             bMenu.setMouseOver(true);
         else if (bReset.getBounds().contains(x, y))
             bReset.setMouseOver(true);
-        else if (bChooseNoPruning.getBounds().contains(x, y))
-            bChooseNoPruning.setMouseOver(true);
-        else if (bChooseAlphaBeta.getBounds().contains(x, y))
-            bChooseAlphaBeta.setMouseOver(true);
         else if (bIncreaseDepth.getBounds ().contains ( x, y ))
             bIncreaseDepth.setMouseOver ( true );
         else if (bDecreaseDepth.getBounds ().contains ( x, y ))
             bDecreaseDepth.setMouseOver ( true );
+
+        if (bChooseNoPruning.getBounds().contains(x, y))
+            bChooseNoPruning.setMouseOver(true);
+        else if (bChooseAlphaBeta.getBounds().contains(x, y))
+            bChooseAlphaBeta.setMouseOver(true);
     }
     @Override
     public void mousePressed(int x, int y) {

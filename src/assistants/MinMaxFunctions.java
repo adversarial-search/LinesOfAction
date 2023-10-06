@@ -71,7 +71,7 @@ public class MinMaxFunctions {
         byte opponentPiece = isBlackTurn ? W : B;
 
         short stateScore = evaluateState ( state, !isBlackTurn );
-        PlayingAgainstAI.incrementStatesEvaluated();
+        GameScene.incrementStatesEvaluated();
 
         if(depth == 0 || (short) (Math.abs(stateScore)) == Short.MAX_VALUE) return stateScore;
 
@@ -175,7 +175,7 @@ public class MinMaxFunctions {
     }
     private static short miniMax(byte[][] state, byte depth, boolean isMax, boolean isBlackTurn) {
         short stateScore = evaluateState(state, !isBlackTurn);
-        PlayingAgainstAI.incrementStatesEvaluated();
+        GameScene.incrementStatesEvaluated();
         if (depth == 0 || (short) (Math.abs(stateScore)) == Short.MAX_VALUE) return stateScore;
 
         List<MoveAndResultingStateObject> immediateStates = getAllImmediateStates(state, isBlackTurn);
