@@ -14,13 +14,14 @@ import java.util.Queue;
 
 public abstract class GameScene {
     protected static final byte WHITE_TURN = 0, BLACK_TURN = 1, W = 0, B = 1, E = 2,PRUNING_MINMAX = 0, CLASSIC_MINMAX=1;
-    protected static byte[][] piecesPositions;
+    public static byte[][] piecesPositions;
     protected static byte turn = B;
     protected static boolean gameWon;
     protected static byte winner;
     protected final TileManager tileManager = new TileManager();
     protected ArrayList<Point> validMoves = new ArrayList<>();
     protected Point activePiece = null;
+    public static int statesEvaluated = 0, showNumStatesEvaluated;
     private final Game game;
 
     public GameScene(Game game) {
@@ -29,7 +30,7 @@ public abstract class GameScene {
 
 
     protected void setValidMovesAndActivePiece(byte row, byte col, byte opponentPiece, byte playersPiece) {
-        validMoves = ValidMovesFunctions.getValidMoves(piecesPositions, row, col, opponentPiece, playersPiece);
+        validMoves = ValidMovesFunctions.getValidMovesAsPoints(piecesPositions, row, col, opponentPiece, playersPiece);
         activePiece = new Point(row, col);
     }
 
@@ -117,7 +118,9 @@ public abstract class GameScene {
         });
         return returnArray;
     }
-
+    public static void incrementStatesEvaluated(){
+        statesEvaluated+=1;
+    }
 
     public static Point getFirstPiece(byte[][] state, byte color) {
         for (byte i = 0; i < 8; i++)
