@@ -9,7 +9,7 @@ import static assistants.ZobristHashing.getZobristKeyForPosition;
 
 public class TranspositionTable {
 
-    public static final Map<Integer, Move> transpositionTable = new HashMap<>();
+    public static final Map<Long, Move> transpositionTable = new HashMap<>();
 
 
     public static void addMoveToTable(byte [][]state,byte colorToMove, byte depth,Move bestMove){
@@ -17,9 +17,8 @@ public class TranspositionTable {
     }
 
     public static Move getMoveFromTable(byte [][]state,byte colorToMove, byte depth){
-        System.out.println("debug line");
-        int zobristKey = ZobristHashing.getZobristKeyForPosition(state,colorToMove,depth);
-        System.out.println("debug line 2");
+
+        long zobristKey = ZobristHashing.getZobristKeyForPosition(state,colorToMove,depth);
 
         return transpositionTable.get(zobristKey);
     }

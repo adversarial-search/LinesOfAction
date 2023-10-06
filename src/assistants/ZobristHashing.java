@@ -10,22 +10,23 @@ import static assistants.LevelBuild.W;
 public class ZobristHashing {
     // TODO: fix runtime issues
 
-    //3 bits for the depth , one bit for turn (0 is white 1 is black) , and 28 bits for the position.
-    // total of 32 bits for the key (int data type is enough)
+    //4 bits for the depth , one bit for turn (0 is white 1 is black) , and 59 bits for the position.
+    // total of 64 bits for the key (long data type)
+    public static Random random = new Random();
+    public static long[][] hashingMatrixWhite=fillHashingMatrix();
+    public static long[][] hashingMatrixBlack=fillHashingMatrix();
 
-    public static int[][] hashingMatrixWhite=fillHashingMatrix();
-    public static int[][] hashingMatrixBlack=fillHashingMatrix();
-
-    public static int[][] fillHashingMatrix(){
-        int[][] filledMatrix = new int[8][8];
+    public static String toBinaryWithLeadingZeroes(long numberToDisplay){
+        String tailEndOfString = Long.toBinaryString(numberToDisplay);
+        String headOfString = "0".repeat(64-tailEndOfString.length());
+        return headOfString+tailEndOfString;
+    }
+    public static long[][] fillHashingMatrix(){
+        long[][] filledMatrix = new long[8][8];
 
         for(byte row = 0; row< 8;row++){
             for(byte column=0; column < 8;column++){
-                //268435456
-                Random random = new Random();
-                int randomlyGenNumber = random.nextInt(0,268435456);
-                System.out.print(randomlyGenNumber+" ");
-                filledMatrix[row][column]= randomlyGenNumber;
+                filledMatrix[row][column]= random.nextLong(0L,576460752303423488L);
             }
             System.out.println();
         }
@@ -33,8 +34,8 @@ public class ZobristHashing {
         return filledMatrix;
     };
 
-    public static int getZobristKeyForPosition(byte [][]state,byte color, byte depth){
-        int returnValue = 0;
+    public static long getZobristKeyForPosition(byte [][]state,byte color, byte depth){
+        long returnValue = 0;
         for(byte row = 0; row < 8; row++ ){
             for(byte column = 0; column<8;column++){
                 returnValue ^= getValueOfSquare(row,column,state[row][column]);
@@ -42,17 +43,31 @@ public class ZobristHashing {
         }
 
         //we add a leading bit if black is to move in the position
-        returnValue ^=color==W? 0:268435456;
+        returnValue ^=color==W? 0:576460752303423488L;
+
+        System.out.println("afterAddingToMove for "+ color +" "+toBinaryWithLeadingZeroes(returnValue));
 
         //we add leading bits for depth;
-        byte bitsToShift = (byte)(32 - Math.ceil(Math.log(depth)/Math.log(2)));
 
-        returnValue ^= (int)Math.pow(2,bitsToShift);
+        if(depth!=0) {
+            long bitMaskForDepth = 576460752303423488L;
+
+            byte amountToShift = (byte) (Math.ceil(Math.log(depth) / Math.log(2)));
+            System.out.println("amount to shift: "+amountToShift);
+            while (amountToShift >= 0) {
+                bitMaskForDepth=bitMaskForDepth<<1;
+                amountToShift -= 1;
+            }
+
+            System.out.println("Bitmask for depth "+ toBinaryWithLeadingZeroes(bitMaskForDepth));
+            returnValue ^= bitMaskForDepth;
+        }
+        System.out.println("final return value: "+toBinaryWithLeadingZeroes(returnValue));
 
         return returnValue;
     }
 
-    public static int getValueOfSquare(byte row, byte column, byte color){
+    public static long getValueOfSquare(byte row, byte column, byte color){
         if(color==W){
             return hashingMatrixWhite[row][column];
         }
