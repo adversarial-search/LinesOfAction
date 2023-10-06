@@ -17,14 +17,12 @@ public class Heuristics {
                     boardPositionsScore += LevelBuild.positionsScore[y][x];
         return color == B ? boardPositionsScore : (short) (-1 * boardPositionsScore);
     }
-
     public static short getArea(byte[][] state, byte color) {
         byte height = (byte) (findBottomMostY(state, color) - findTopMostY(state, color));
         byte width = (byte) (findRightMostX(state, color) - findLeftMostX(state, color));
 
         return color == B ? (short) (height * width) : (short) (-1 * height * width);
     }
-
     public static byte getScoreFromNumEnemyPieces(byte[][] state, byte playerColor) {
         byte enemyPiecesCount = 0;
         byte enemyColor = playerColor == B ? W : B;
@@ -36,7 +34,6 @@ public class Heuristics {
 
         return playerColor == B ? LevelBuild.numPiecesScore[enemyPiecesCount - 1] : (byte) (-1 * LevelBuild.numPiecesScore[enemyPiecesCount - 1]);
     }
-
     public static short numberOfOpponentsMoves(byte[][] state, byte playerColor) {
         byte opponentColor = playerColor == B ? W : B;
 
@@ -56,7 +53,6 @@ public class Heuristics {
 
         return playerColor == B ? numberOfPossibleNextPositionsForOpponent : (short) (-1 * numberOfPossibleNextPositionsForOpponent);
     }
-
     public static byte getNumConnectedPieces(byte[][] state, byte color) {
         byte numConnectedPieces = 0;
         for (byte y = 0; y < 8; y++)
@@ -65,7 +61,6 @@ public class Heuristics {
                     numConnectedPieces += 1;
         return color == B ? numConnectedPieces : (byte) (-1 * numConnectedPieces);
     }
-
     public static short getDensityScore(byte[][] state, byte color) {
         double centerX = 0;
         double centerY = 0;
@@ -91,6 +86,7 @@ public class Heuristics {
     }
 
 
+
     private static byte findLeftMostX(byte[][] state, byte color) {
 
         for (byte col = 0; col < 8; col++) {
@@ -102,7 +98,6 @@ public class Heuristics {
         }
         return -1;
     }
-
     private static byte findRightMostX(byte[][] state, byte color) {
 
 
@@ -115,7 +110,6 @@ public class Heuristics {
         }
         return -1;
     }
-
     private static byte findBottomMostY(byte[][] state, byte color) {
 
         for (byte row = 7; row >= 0; row--) {
@@ -127,7 +121,6 @@ public class Heuristics {
         }
         return -1;
     }
-
     private static byte findTopMostY(byte[][] state, byte color) {
 
         for (byte row = 0; row < 8; row++) {
@@ -139,7 +132,6 @@ public class Heuristics {
         }
         return -1;
     }
-
     private static boolean isConnected(byte state[][], byte row, byte col, byte color) {
         for (byte y = (byte) Math.max(row - 1, 0); y < Math.min(row + 2, 8); y++)
             for (byte x = (byte) Math.max(col - 1, 0); x < Math.min(col + 2, 8); x++)

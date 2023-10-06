@@ -2,9 +2,12 @@ package scenes;
 
 import assistants.LevelBuild;
 import main.Game;
+import objects.StateInfo;
 import ui.MyButton;
 
 import java.awt.*;
+import java.util.HashSet;
+import java.util.Set;
 
 import static main.GameStates.MENU;
 import static main.GameStates.SetGameState;
@@ -12,7 +15,7 @@ import static main.GameStates.SetGameState;
 public class PlayingAgainstPerson extends GameScene implements SceneMethods {
     Game game;
     private MyButton bMenu, bReset;
-
+    private static Set<StateInfo> stateHistory = new HashSet<> (  );
 
     public PlayingAgainstPerson(Game game) {
         super(game);
@@ -25,6 +28,7 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods {
         turn = BLACK_TURN;
         gameWon = false;
         winner = -1;
+        stateHistory.add ( new StateInfo ( piecesPositions, true ) );
     }
 
     private void initButtons() {
@@ -75,6 +79,7 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods {
         turn = BLACK_TURN;
         gameWon = false;
         winner = -1;
+        stateHistory.add ( new StateInfo ( piecesPositions, true ) );
     }
 
     @Override
@@ -82,6 +87,12 @@ public class PlayingAgainstPerson extends GameScene implements SceneMethods {
         if (turn == BLACK_TURN) turn = WHITE_TURN;
         else turn = BLACK_TURN;
         resetValidMovesAndActivePiece();
+
+        StateInfo stateInfo = new StateInfo ( piecesPositions, turn == BLACK_TURN );
+        if(stateHistory.contains ( stateInfo )){
+            System.out.println ( "draw" );
+            resetGame ();
+        }else stateHistory.add ( stateInfo );
     }
 
     @Override

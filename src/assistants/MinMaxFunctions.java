@@ -2,19 +2,18 @@ package assistants;
 
 import objects.Point;
 import objects.StateGenerationDTO;
+import objects.StateInfo;
 import scenes.PlayingAgainstAI;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.function.Function;
-
 import static assistants.EvaluateStateFunctions.evaluateState;
 import static assistants.LevelBuild.W;
 import static assistants.StateGenerationFunctions.getAllImmediateStates;
 import static assistants.StateGenerationFunctions.getStateFromMove;
 import static scenes.GameScene.getAllPiecesOfColor;
-
+import static scenes.AIAgainstAI.stateHistory;
 public class MinMaxFunctions {
     private static final Random random = new Random();
     private static final byte B = 1;
@@ -27,6 +26,8 @@ public class MinMaxFunctions {
             List<byte[][]> immediateStates = getAllImmediateStates(initialState, false);
 
             for (byte[][] state : immediateStates) {
+                if(stateHistory.contains ( new StateInfo ( state, true ) )) continue;
+
                 short moveScore = miniMax(state, depth, Short.MIN_VALUE, Short.MAX_VALUE, true, true);
                 if (moveScore < bestScore) {
                     bestScore = moveScore;
@@ -40,6 +41,8 @@ public class MinMaxFunctions {
             short bestScore = Short.MIN_VALUE;
             List<byte[][]> immediateStates = getAllImmediateStates(initialState, true);
             for (byte[][] state : immediateStates) {
+                if(stateHistory.contains ( new StateInfo ( state, false ) )) continue;
+
                 short moveScore = miniMax(state, depth, Short.MIN_VALUE, Short.MAX_VALUE, false, false);
                 if (moveScore > bestScore) {
                     bestScore = moveScore;
@@ -53,7 +56,6 @@ public class MinMaxFunctions {
 
         return bestMoves.get(random.nextInt(bestMoves.size()));
     }
-
     private static short miniMax(byte[][] state, byte depth, short alpha, short beta, boolean isMax, boolean isBlackTurn) {
         byte playerPiece = isBlackTurn ? B : W;
         byte opponentPiece = isBlackTurn ? W : B;
@@ -77,6 +79,8 @@ public class MinMaxFunctions {
                     if (positionToMoveTo != null) {
                         nextState = getStateFromMove(state, p, positionToMoveTo);
 
+                        if(stateHistory.contains ( new StateInfo ( nextState, !isBlackTurn ) )) continue;
+
                         highestScore = (short) Math.max(highestScore, miniMax(nextState, (byte) (depth - 1), alpha, beta, false, !isBlackTurn));
 
                         alpha = (short) Math.max(alpha, highestScore);
@@ -97,6 +101,8 @@ public class MinMaxFunctions {
                     if (positionToMoveTo != null) {
                         nextState = getStateFromMove(state, p, positionToMoveTo);
 
+                        if(stateHistory.contains ( new StateInfo ( nextState, !isBlackTurn ) )) continue;
+
                         lowestScore = (short) Math.min(lowestScore, miniMax(nextState, (byte) (depth - 1), alpha, beta, true, !isBlackTurn));
 
                         beta = (short) Math.min(beta, lowestScore);
@@ -111,6 +117,7 @@ public class MinMaxFunctions {
     }
 
 
+
     public static byte[][] getBasicMiniMaxState(byte id, byte depth, byte[][] initialState) {
         ArrayList<byte[][]> bestMoves = new ArrayList<>();
 
@@ -119,6 +126,8 @@ public class MinMaxFunctions {
             List<byte[][]> immediateStates = getAllImmediateStates(initialState, false);
 
             for (byte[][] state : immediateStates) {
+                if(stateHistory.contains ( new StateInfo ( state, true ) )) continue;
+
                 short moveScore = miniMax(state, depth, true, true);
                 if (moveScore < bestScore) {
                     bestScore = moveScore;
@@ -133,6 +142,8 @@ public class MinMaxFunctions {
             short bestScore = Short.MIN_VALUE;
             List<byte[][]> immediateStates = getAllImmediateStates(initialState, true);
             for (byte[][] state : immediateStates) {
+                if(stateHistory.contains ( new StateInfo ( state, false ) )) continue;
+
                 short moveScore = miniMax(state, depth, false, false);
                 if (moveScore > bestScore) {
                     bestScore = moveScore;
@@ -144,14 +155,9 @@ public class MinMaxFunctions {
                 }
             }
         }
-        //TODO: check what happened here and if this was the cause of some Exception that was thrown
-        if(bestMoves.isEmpty()){
-            System.out.println("NO VALID MOVES");
-            System.exit(0);
-        }
+
         return bestMoves.get(random.nextInt(bestMoves.size()));
     }
-
     private static short miniMax(byte[][] state, byte depth, boolean isMax, boolean isBlackTurn) {
         short stateScore = evaluateState(state, !isBlackTurn);
         PlayingAgainstAI.incrementStatesEvaluated();
@@ -161,15 +167,21 @@ public class MinMaxFunctions {
         if (immediateStates.isEmpty()) return stateScore;
 
 
-        if (isMax) { // this is a maximising node
+        if (isMax) {
             short highestScore = Short.MIN_VALUE;
-            for (byte[][] immediateState : immediateStates)
-                highestScore = (short) Math.max(highestScore, miniMax(immediateState, (byte) (depth - 1), false, !isBlackTurn));
+            for (byte[][] immediateState : immediateStates) {
+                if(stateHistory.contains ( new StateInfo ( immediateState, !isBlackTurn ) )) continue;
+
+                highestScore = (short) Math.max ( highestScore, miniMax ( immediateState, (byte) (depth - 1), false, !isBlackTurn ) );
+            }
             return highestScore;
         } else {
             short lowestScore = Short.MAX_VALUE;
-            for (byte[][] immediateState : immediateStates)
-                lowestScore = (short) Math.min(lowestScore, miniMax(immediateState, (byte) (depth - 1), true, !isBlackTurn));
+            for (byte[][] immediateState : immediateStates) {
+                if(stateHistory.contains ( new StateInfo ( immediateState, !isBlackTurn ) )) continue;
+
+                lowestScore = (short) Math.min ( lowestScore, miniMax ( immediateState, (byte) (depth - 1), true, !isBlackTurn ) );
+            }
             return lowestScore;
         }
     }

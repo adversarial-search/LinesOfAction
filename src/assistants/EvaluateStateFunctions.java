@@ -4,7 +4,7 @@ import static assistants.LevelBuild.B;
 import static assistants.LevelBuild.W;
 import static scenes.GameScene.allPiecesConnected;
 import static scenes.GameScene.getFirstPiece;
-
+import static scenes.AIAgainstAI.turn;
 public class EvaluateStateFunctions {
 
 
@@ -17,14 +17,25 @@ public class EvaluateStateFunctions {
             if (specialWin != 0) return specialWin;
         }
 
+        //BLACK PLAYS WITH ALL EVALUATION FUNCTIONS
+        if(turn == B)
+            return (short) (
+                              Heuristics.getScoreFromBoardPositions(state, color)   //h1
+                            + Heuristics.getNumConnectedPieces(state, color)        //h5
+                            - Heuristics.getDensityScore(state, color)              //h3
+                            - Heuristics.getArea(state, color)                      //h2
+                            - Heuristics.getScoreFromNumEnemyPieces(state, color)   //h4
+                            - Heuristics.numberOfOpponentsMoves(state, color)       //h6
+            );
+
+        //WHITE PLAYS WITH A SUBSET OF THE EVALUATION FUNCTIONS
         return (short) (
-                Heuristics.getScoreFromBoardPositions(state, color)
-                        + Heuristics.getNumConnectedPieces(state, color)
-                        - Heuristics.getDensityScore(state, color)
-                        - Heuristics.getArea(state, color)
-                        - Heuristics.getScoreFromNumEnemyPieces(state, color)
-                        - Heuristics.numberOfOpponentsMoves(state, color)
-        );
+                          Heuristics.getScoreFromBoardPositions ( state, color )    //h1
+                        - Heuristics.getArea(state, color)                          //h2
+                        - Heuristics.getDensityScore(state, color)                  //h3
+                        - Heuristics.getScoreFromNumEnemyPieces(state, color)       //h4
+                        + Heuristics.getNumConnectedPieces(state, color)            //h5
+                );
     }
 
     public static short specialWinningCondition(byte[][] state, boolean isBlackTurn) {
