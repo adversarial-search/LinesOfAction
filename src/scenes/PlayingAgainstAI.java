@@ -23,6 +23,8 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
     private static boolean aiTypeIsChosen = false;
     private static byte playerID,aiID;
     private static AIType aiType;
+    protected static int turnCounter=0;
+    protected static boolean transpositionTableChosen = false;
     public static boolean useTranspositionTable = true;
     private static final Random random = new Random ( );
     Game game;
@@ -34,7 +36,10 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             bChooseNoPruning,
             bChooseAlphaBeta,
             bIncreaseDepth,
-            bDecreaseDepth;
+            bDecreaseDepth,
+            bUseTranspositionTable,
+            bDontUseTranspositionTable,
+            drawTextUseTranspositionTable;
 
 
 
@@ -50,6 +55,8 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         idIsChosen = false;
         playerID = -1;
         aiID = -1;
+        transpositionTableChosen=false;
+        turnCounter=0;
     }
     private void initButtons() {
         bChooseBlack = new MyButton("Play As Black", 192, 128, 256, 128);
@@ -60,11 +67,14 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         bReset = new MyButton("Reset", 128, 12, 100, 40);
         bIncreaseDepth = new MyButton ( "++Depth", 242, 37, 100, 25 );
         bDecreaseDepth = new MyButton ( "--Depth", 242, 6, 100, 25 );
+        drawTextUseTranspositionTable = new MyButton("Use transposition table?",192, 60, 256, 50);
+        bUseTranspositionTable = new MyButton("YES", 192, 416, 256, 128);
+        bDontUseTranspositionTable = new MyButton("NO", 192, 128, 256, 128);
     }
     @Override
     public void render(Graphics g) {
         //draw buttons
-        if (idIsChosen && aiTypeIsChosen) {
+        if (idIsChosen && aiTypeIsChosen && transpositionTableChosen) {
             //draw background
             drawBoardBackground(g);
 
@@ -93,9 +103,13 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             if(!idIsChosen) {
                 drawMenuBackground(g);
                 drawChooseSideButtons(g);
-            } else {
+            } else if(!aiTypeIsChosen) {
                 drawMenuBackground(g);
                 drawChooseAiTypeButtons(g);
+            }else {
+                drawMenuBackground(g);
+                drawChooseTranspositionTable(g);
+                drawPickTranspositionText(g);
             }
         }
     }
@@ -118,7 +132,13 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             g.drawString ( String.valueOf ( showNumStatesEvaluated ), 412, 45 );
         }
     }
-
+    public void drawPickTranspositionText(Graphics g){
+        drawTextUseTranspositionTable.drawTextOnly(g);
+    }
+    private void drawChooseTranspositionTable(Graphics g){
+        bUseTranspositionTable.draw(g);
+        bDontUseTranspositionTable.draw(g);
+    }
     private void drawDepthButtons ( Graphics g ) {
         if(!gameWon) {
             bIncreaseDepth.draw ( g );
@@ -172,6 +192,8 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         MAX_DEPTH=0;
         statesEvaluated = 0;
         showNumStatesEvaluated = 0;
+        transpositionTableChosen=false;
+        turnCounter=0;
     }
     @Override
     protected void changeTurn() {
@@ -192,7 +214,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         }
     }
     private void makeAiMove() {
-        if(useTranspositionTable){
+        if(useTranspositionTable&&turnCounter!=0){
             aiType.makeMoveWithTranspositionTable(aiID,MAX_DEPTH,piecesPositions);
         }
         else{
@@ -202,7 +224,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
 
         checkWinningConditions();
         changeTurn();
-
+        turnCounter+=1;
         showNumStatesEvaluated = statesEvaluated;
         statesEvaluated=0;
     }
@@ -215,6 +237,9 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             return;
         } else if (!aiTypeIsChosen) {
             chooseAiType(x,y);
+            return;
+        }else if(!transpositionTableChosen){
+            chooseTranspositionTable(x,y);
             return;
         }
 
@@ -256,6 +281,8 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         bChooseNoPruning.setMouseOver(false);
         bIncreaseDepth.setMouseOver ( false );
         bDecreaseDepth.setMouseOver ( false );
+        bUseTranspositionTable.setMouseOver(false);
+        bDontUseTranspositionTable.setMouseOver(false);
 
         if (bChooseBlack.getBounds().contains(x, y))
             bChooseBlack.setMouseOver(true);
@@ -274,6 +301,11 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             bChooseNoPruning.setMouseOver(true);
         else if (bChooseAlphaBeta.getBounds().contains(x, y))
             bChooseAlphaBeta.setMouseOver(true);
+
+        if (bDontUseTranspositionTable.getBounds().contains(x, y))
+            bDontUseTranspositionTable.setMouseOver(true);
+        else if (bUseTranspositionTable.getBounds().contains(x, y))
+            bUseTranspositionTable.setMouseOver(true);
     }
     @Override
     public void mousePressed(int x, int y) {
@@ -285,14 +317,31 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
             bMenu.setMousePressed(true);
         else if (bReset.getBounds().contains(x, y))
             bReset.setMousePressed(true);
-        else if (bChooseNoPruning.getBounds().contains(x, y))
-            bChooseNoPruning.setMousePressed(true);
-        else if (bChooseAlphaBeta.getBounds().contains(x, y))
-            bChooseAlphaBeta.setMousePressed(true);
         else if (bIncreaseDepth.getBounds ().contains ( x, y ))
             bIncreaseDepth.setMousePressed ( true );
         else if (bDecreaseDepth.getBounds ().contains ( x, y ))
             bDecreaseDepth.setMousePressed ( true );
+
+        if (bChooseNoPruning.getBounds().contains(x, y))
+            bChooseNoPruning.setMousePressed(true);
+        else if (bChooseAlphaBeta.getBounds().contains(x, y))
+            bChooseAlphaBeta.setMousePressed(true);
+
+        if (bDontUseTranspositionTable.getBounds().contains(x, y))
+            bDontUseTranspositionTable.setMousePressed(true);
+        else if (bUseTranspositionTable.getBounds().contains(x, y))
+            bUseTranspositionTable.setMousePressed(true);
+
+    }
+
+    private void chooseTranspositionTable(int x, int y){
+        if(bUseTranspositionTable.getBounds().contains(x,y)){
+            useTranspositionTable=true;
+            transpositionTableChosen=true;
+        }else if(bDontUseTranspositionTable.getBounds().contains(x,y)){
+            useTranspositionTable=false;
+            transpositionTableChosen=true;
+        }
     }
     @Override
     public void mouseReleased(int x, int y) {
@@ -307,5 +356,7 @@ public class PlayingAgainstAI extends GameScene implements SceneMethods {
         bChooseAlphaBeta.resetBooleans();
         bIncreaseDepth.resetBooleans ();
         bDecreaseDepth.resetBooleans ();
+        bDontUseTranspositionTable.resetBooleans();
+        bUseTranspositionTable.resetBooleans();
     }
 }

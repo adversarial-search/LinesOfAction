@@ -59,6 +59,7 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
         whiteChosen = false;
         blackChosen = false;
         transpositionTableChosen=false;
+        turnCounter=0;
     }
 
     private void initButtons() {
@@ -299,10 +300,6 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
             bMenu.setMousePressed(true);
         else if (bReset.getBounds().contains(x, y))
             bReset.setMousePressed(true);
-        else if (bChooseNoPruningWhite.getBounds().contains(x, y))
-            bChooseNoPruningWhite.setMousePressed(true);
-        else if (bChooseAlphaBetaWhite.getBounds().contains(x, y))
-            bChooseAlphaBetaWhite.setMousePressed(true);
         else if (bNextMove.getBounds().contains(x, y))
             bNextMove.setMousePressed(true);
         else if (bIncreaseDepth.getBounds ().contains ( x, y ))
@@ -314,6 +311,11 @@ public class AIAgainstAI extends GameScene implements SceneMethods{
             bChooseNoPruningBlack.setMousePressed(true);
         else if (bChooseAlphaBetaBlack.getBounds().contains(x, y))
             bChooseAlphaBetaBlack.setMousePressed(true);
+
+        if (bChooseNoPruningWhite.getBounds().contains(x, y))
+            bChooseNoPruningWhite.setMousePressed(true);
+        else if (bChooseAlphaBetaWhite.getBounds().contains(x, y))
+            bChooseAlphaBetaWhite.setMousePressed(true);
 
         if (bDontUseTranspositionTable.getBounds().contains(x, y))
             bDontUseTranspositionTable.setMousePressed(true);
