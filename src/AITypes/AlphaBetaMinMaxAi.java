@@ -6,11 +6,11 @@ public class AlphaBetaMinMaxAi implements AIType{
 
     @Override
     public void makeMove(byte id, byte depth, byte[][] initialState) {
-        MinMaxFunctions.makeAlphaBetaMiniMaxMove( id, depth, initialState,false);
+        MinMaxFunctions.makeAlphaBetaMiniMaxMove( id, depth, initialState,false,true);
     }
 
     @Override
     public void makeMoveWithTranspositionTable(byte id, byte depth, byte[][] initialState) {
-        MinMaxFunctions.makeAlphaBetaMiniMaxMove( id, depth, initialState,true);
+        MinMaxFunctions.makeAlphaBetaMiniMaxMove( id, depth, initialState,true,true);
     }
 }

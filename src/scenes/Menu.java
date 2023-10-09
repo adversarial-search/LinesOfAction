@@ -1,5 +1,6 @@
 package scenes;
 
+import assistants.TranspositionTable;
 import main.Game;
 import ui.MyButton;
 
@@ -8,7 +9,7 @@ import java.awt.*;
 import static main.GameStates.*;
 
 public class Menu extends GameScene implements SceneMethods {
-    private MyButton bPlayingAgainstAI, bPlayingAgainstPerson, bAIAgainstAI, bQuit;
+    private MyButton bPlayingAgainstAI, bPlayingAgainstPerson, bAIAgainstAI, bQuit,bFillTranspositionTable;
 
 
     public Menu(Game game) {
@@ -27,6 +28,8 @@ public class Menu extends GameScene implements SceneMethods {
         bPlayingAgainstPerson = new MyButton("Play Against Person", x, y + yOffset, w, h);
         bAIAgainstAI = new MyButton("AI Against AI", x, y + 2 * yOffset, w, h);
         bQuit = new MyButton("Quit", x + 64, y + 3 * yOffset, w / 2, h);
+        bFillTranspositionTable =new MyButton("💎",580,650,50,40);
+
     }
 
 
@@ -51,8 +54,13 @@ public class Menu extends GameScene implements SceneMethods {
             SetGameState(AI_AGAINST_AI);
         } else if (bQuit.getBounds().contains(x, y)) {
             System.exit(0);
+        } else if (bFillTranspositionTable.getBounds().contains(x,y)) {
+            PlayingAgainstPerson.setUpInitialGameState();
+            TranspositionTable.fillTranspositionTable();
         }
     }
+
+
 
     @Override
     public void mouseMoved(int x, int y) {
@@ -60,6 +68,7 @@ public class Menu extends GameScene implements SceneMethods {
         bPlayingAgainstPerson.setMouseOver(false);
         bAIAgainstAI.setMouseOver(false);
         bQuit.setMouseOver(false);
+        bFillTranspositionTable.setMouseOver(false);
 
         if (bPlayingAgainstAI.getBounds().contains(x, y)) {
             bPlayingAgainstAI.setMouseOver(true);
@@ -69,6 +78,9 @@ public class Menu extends GameScene implements SceneMethods {
             bAIAgainstAI.setMouseOver(true);
         } else if (bQuit.getBounds().contains(x, y)) {
             bQuit.setMouseOver(true);
+        }
+        else if (bFillTranspositionTable.getBounds().contains(x,y)){
+            bFillTranspositionTable.setMouseOver(true);
         }
     }
 
@@ -82,6 +94,9 @@ public class Menu extends GameScene implements SceneMethods {
             bAIAgainstAI.setMousePressed(true);
         } else if (bQuit.getBounds().contains(x, y)) {
             bQuit.setMousePressed(true);
+        }else if (bFillTranspositionTable.getBounds().contains(x,y)){
+
+            bFillTranspositionTable.setMousePressed(true);
         }
     }
 
@@ -95,6 +110,7 @@ public class Menu extends GameScene implements SceneMethods {
         bPlayingAgainstPerson.resetBooleans();
         bAIAgainstAI.resetBooleans();
         bQuit.resetBooleans();
+        bFillTranspositionTable.resetBooleans();
     }
 
     private void drawButtons(Graphics g) {
@@ -102,6 +118,7 @@ public class Menu extends GameScene implements SceneMethods {
         bPlayingAgainstPerson.draw(g);
         bAIAgainstAI.draw(g);
         bQuit.draw(g);
+        bFillTranspositionTable.draw(g);
     }
 
 
