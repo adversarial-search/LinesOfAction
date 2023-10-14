@@ -15,10 +15,10 @@ import static main.GameStates.MENU;
 import static main.GameStates.SetGameState;
 
 public class AIAgainstAI extends GameScene implements SceneMethods {
-    private static final byte WHITE_DEPTH_BASIC = 0;
-    private static final byte WHITE_DEPTH_AB = 2;
-    private static final byte BLACK_DEPTH_BASIC = 0;
-    private static final byte BLACK_DEPTH_AB = 2;
+    private static final byte WHITE_DEPTH_BASIC = 1;
+    private static final byte WHITE_DEPTH_AB = 1;
+    private static final byte BLACK_DEPTH_BASIC = 1;
+    private static final byte BLACK_DEPTH_AB = 1;
     protected static boolean whiteChosen = false;
     protected static boolean blackChosen = false;
     protected byte whiteAiType;
@@ -48,6 +48,9 @@ public class AIAgainstAI extends GameScene implements SceneMethods {
             drawTextPickWhiteAiType,
             drawTextPickBlackAiType;
 
+    private static ArrayList<Integer> numStatesEvaluatedByBlack = new ArrayList<> (  );
+    public static int numStatesEvaluated = 0;
+    public static int moveCount = 0;
 
     public AIAgainstAI ( Game game ) {
         super ( game );
@@ -169,7 +172,11 @@ public class AIAgainstAI extends GameScene implements SceneMethods {
                     timeTakenPerMove.put ( movesPerGameCounter - 1, tmp );
                 }
             } else {
+                moveCount = 0;
                 System.out.println ("Games played: " + (gamesPlayedCounter+1) );
+//                for (Integer integer : numStatesEvaluatedByBlack)
+//                    System.out.print ( integer + ", " );
+                System.out.println ( );
                 if(gamesPlayedCounter != 0) {
                     endTime = System.currentTimeMillis ( );
                     timeTakenPerGame.add ( endTime - startTime );
@@ -177,6 +184,7 @@ public class AIAgainstAI extends GameScene implements SceneMethods {
 
                     if (winner == W) gamesWonByWhite += 1;
                     if (winner == B) gamesWonByBlack += 1;
+
                 }
                 gamesPlayedCounter += 1;
                 if(gamesPlayedCounter != 1)
@@ -190,33 +198,35 @@ public class AIAgainstAI extends GameScene implements SceneMethods {
                     stateHistory = new HashSet<> ( );
                     movesPerGameCounter = 0;
                 } else {
-                    System.out.println ("Games won by white: " + gamesWonByWhite );
-                    System.out.println ("Games won by black: " + gamesWonByBlack );
-                    System.out.println ("White win ratio: " + (gamesWonByWhite*100d/(gamesWonByWhite+gamesWonByBlack)) + "%");
-                    System.out.println ("Black win ratio: " + (gamesWonByBlack*100d/(gamesWonByWhite+gamesWonByBlack)) + "%");
-
-                    System.out.println ( );
-                    System.out.println ("Moves per game: " + numMovesTakenPerGame.stream ( ).sorted ( ).toList ( ) );
-                    System.out.println ("Average number of moves per game: " + numMovesTakenPerGame.stream ().mapToInt ( Integer::intValue ).average ().orElse ( 0.0d ) );
-
-                    System.out.println ( );
-                    System.out.println ("Time per game: " + timeTakenPerGame.stream ( ).sorted (  ).map ( num -> num / 1000d + "s" ).toList ( ) );
-                    System.out.println ("Average time taken per game: " + timeTakenPerGame.stream ().mapToDouble ( num -> num/1000d ).average ().orElse ( 0.0d ) + "s" );
-
-
-                    System.out.println ( );
-                    System.out.println ("Average time taken per move: " );
-                    Map<Integer, Double> frequencies = new LinkedHashMap<> (  );
-                    for(int i=0; i < timeTakenPerMove.keySet ().stream ().max ( Integer::compareTo ).orElse ( 0 ); i++) {
-                        ArrayList<Integer> arr = timeTakenPerMove.get ( i );
-                        if(arr.isEmpty ()) continue;
-
-                        frequencies.put ( i, arr.stream ().mapToInt ( Integer::valueOf ).average ().orElse ( -1.0d ) );
-                    }
-                    for(int i=0; i < timeTakenPerMove.keySet ().stream ().max ( Integer::compareTo ).orElse ( 0 ); i++)
-                        if(frequencies.containsKey ( i ))
-                            System.out.println ((i+1) + ": " + frequencies.get ( i ) );
-
+//                    System.out.println ("Games won by white: " + gamesWonByWhite );
+//                    System.out.println ("Games won by black: " + gamesWonByBlack );
+//                    System.out.println ("White win ratio: " + (gamesWonByWhite*100d/(gamesWonByWhite+gamesWonByBlack)) + "%");
+//                    System.out.println ("Black win ratio: " + (gamesWonByBlack*100d/(gamesWonByWhite+gamesWonByBlack)) + "%");
+//
+//                    System.out.println ( );
+//                    System.out.println ("Moves per game: " + numMovesTakenPerGame.stream ( ).sorted ( ).toList ( ) );
+//                    System.out.println ("Average number of moves per game: " + numMovesTakenPerGame.stream ().mapToInt ( Integer::intValue ).average ().orElse ( 0.0d ) );
+//
+//                    System.out.println ( );
+//                    System.out.println ("Time per game: " + timeTakenPerGame.stream ( ).sorted (  ).map ( num -> num / 1000d + "s" ).toList ( ) );
+//                    System.out.println ("Average time taken per game: " + timeTakenPerGame.stream ().mapToDouble ( num -> num/1000d ).average ().orElse ( 0.0d ) + "s" );
+//
+//
+//                    System.out.println ( );
+//                    System.out.println ("Average time taken per move: " );
+//                    Map<Integer, Double> frequencies = new LinkedHashMap<> (  );
+//                    for(int i=0; i < timeTakenPerMove.keySet ().stream ().max ( Integer::compareTo ).orElse ( 0 ); i++) {
+//                        ArrayList<Integer> arr = timeTakenPerMove.get ( i );
+//                        if(arr.isEmpty ()) continue;
+//
+//                        frequencies.put ( i, arr.stream ().mapToInt ( Integer::valueOf ).average ().orElse ( -1.0d ) );
+//                    }
+//                    for(int i=0; i < timeTakenPerMove.keySet ().stream ().max ( Integer::compareTo ).orElse ( 0 ); i++)
+//                        if(frequencies.containsKey ( i ))
+//                            System.out.println ((i+1) + ": " + frequencies.get ( i ) );
+                    System.out.println ("END: " );
+                    for(Integer num: numStatesEvaluatedByBlack)
+                        System.out.print ( num + ", " );
 
                     System.exit ( 0 );
                 }
@@ -361,6 +371,19 @@ public class AIAgainstAI extends GameScene implements SceneMethods {
 
     private void makeNextMove () {
         makeAiMove ( turn );
+        if(turn == W) { // black has played
+            int toAdd;
+            try{
+                toAdd = numStatesEvaluatedByBlack.get ( moveCount );
+                toAdd += numStatesEvaluated;
+            }catch (Exception e){
+                toAdd = numStatesEvaluated;
+            }
+
+            numStatesEvaluatedByBlack.add ( moveCount, toAdd );
+            moveCount++;
+        }
+        numStatesEvaluated = 0;
         movesPerGameCounter += 1;
     }
 

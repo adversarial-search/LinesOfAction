@@ -12,6 +12,7 @@ import static assistants.EvaluateStateFunctions.evaluateState;
 import static assistants.LevelBuild.W;
 import static assistants.StateGenerationFunctions.getAllImmediateStates;
 import static assistants.StateGenerationFunctions.getStateFromMove;
+import static scenes.AIAgainstAI.numStatesEvaluated;
 import static scenes.GameScene.getAllPiecesOfColor;
 import static scenes.AIAgainstAI.stateHistory;
 public class MinMaxFunctions {
@@ -61,6 +62,7 @@ public class MinMaxFunctions {
         byte opponentPiece = isBlackTurn ? W : B;
 
         short stateScore = evaluateState(state, !isBlackTurn);
+
         PlayingAgainstAI.incrementStatesEvaluated();
 
         if (depth == 0 || (short) (Math.abs(stateScore)) == Short.MAX_VALUE) return stateScore;
@@ -160,6 +162,7 @@ public class MinMaxFunctions {
     }
     private static short miniMax(byte[][] state, byte depth, boolean isMax, boolean isBlackTurn) {
         short stateScore = evaluateState(state, !isBlackTurn);
+        numStatesEvaluated += 1;
         PlayingAgainstAI.incrementStatesEvaluated();
         if (depth == 0 || (short) (Math.abs(stateScore)) == Short.MAX_VALUE) return stateScore;
 

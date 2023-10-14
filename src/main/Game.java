@@ -8,7 +8,7 @@ import scenes.PlayingAgainstPerson;
 import javax.swing.*;
 
 public class Game extends JFrame implements Runnable {
-    private final double FPS_SET = 30.0;
+    private final double FPS_SET = 200.0;
     private final double UPS_SET = 60.0;
     private GameScreen gameScreen;
     private Thread gameThread;
