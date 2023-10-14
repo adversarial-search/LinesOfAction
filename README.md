@@ -1,6 +1,7 @@
-## Results obtained without Transposition Tables
-<div align="center">
-  
+## Results obtained from simulating two AI agents with different evaluation functions at same depth
+<div>
+<h4>Results from simulation 1:</h4>
+
 | AI Color: | Evaluation functions:  |
 | --------- | ---------------------- |
 | White:    | h1                     |
@@ -14,7 +15,9 @@
 | White AI win percentage:          | 37.00%    | 37.50%   | 31.00%   |
 | Black AI win percentage:          | 63.00%    | 62.50%   | 69.00%   |
 | Average Number of Moves per Game: | 25.08     | 85.475   | 32.755   |
-| Average Time Taken per Game:      | 0.875115s | 2.89413s | 1.44577s |
+
+<hr>
+<h4>Results from simulation 2:</h4>
 
 | AI Color: | Evaluation functions:  |
 | --------- | ---------------------- |
@@ -29,7 +32,9 @@
 | White AI win percentage:          | 42.00%    | 50.00%  | 60.50%   |
 | Black AI win percentage:          | 58.00%    | 50.00%  | 39.50%   |
 | Average Number of Moves per Game: | 25.89     | 92.755  | 31.93    |
-| Average Time Taken per Game:      | 0.900515s | 3.1479s | 1.41947s |
+
+<hr>
+<h4>Results from simulation 3:</h4>
 
 | AI Color: | Evaluation functions:  |
 | --------- | ---------------------- |
@@ -44,7 +49,9 @@
 | White AI win percentage:          | 64.00%   | 52.00%   | 62.00%   |
 | Black AI win percentage:          | 36.00%   | 48.00%   | 38.00%   |
 | Average Number of Moves per Game: | 26.48    | 91.925   | 29.72    |
-| Average Time Taken per Game:      | 0.92059s | 3.13112s | 1.29004s |
+
+<hr>
+<h4>Results from simulation 4:</h4>
 
 | AI Color: | Evaluation functions:  |
 | --------- | ---------------------- |
@@ -59,7 +66,9 @@
 | White AI win percentage:          | 16.50%    | 45.50%    | 55.50%    |
 | Black AI win percentage:          | 83.50%    | 54.50%    | 44.50%    |
 | Average Number of Moves per Game: | 29.315    | 107.51    | 30.655    |
-| Average Time Taken per Game:      | 1.016305s | 3.628215s | 1.320345s |
+
+<hr>
+<h4>Results from simulation 5:</h4>
 
 | AI Color: | Evaluation functions:  |
 | --------- | ---------------------- |
@@ -74,5 +83,21 @@
 | White AI win percentage:          | 36.00%   | 48.00%    | 66.50%    |
 | Black AI win percentage:          | 64.00%   | 52.00%    | 33.50%    |
 | Average Number of Moves per Game: | 23.33    | 110.665   | 30.955    |
-| Average Time Taken per Game:      | 0.81484s | 3.741395s | 1.395165s |
+
+<hr>
+<h4>Results from simulation 6:</h4>
+
+| AI Color: | Evaluation functions:  |
+| --------- | ---------------------- |
+| White:    | h1, h2, h3, h4, h5, h6 |
+| Black:    | h1, h2, h3, h4, h5, h6 |
+
+| Depth:                            | 0        | 1         | 2         |
+| --------------------------------- | -------- | --------- | --------- |
+| Games played:                     | 200      | 200       | 200       |
+| Games won by white:               | 102      | 101       | 109       |
+| Games won by black:               | 98       | 99        | 91        |
+| White AI win percentage:          | 51.00%   | 50.50%    | 54.50%    |
+| Black AI win percentage:          | 49.00%   | 49.50%    | 45.50%    |
+| Average Number of Moves per Game: | 22.96    | 111.945   | 34.3      |
 </div>
