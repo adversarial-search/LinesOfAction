@@ -1,3 +1,16 @@
+# Adversarial search agent for the game Lines of Action!
+
+A Student project made by David Stankovski and Jakov Damjanski. 
+In this project we have a fully playable implementation of the game and an agent that employs
+many of the well known search techniques generally used in adversarial search.
+
+You can download the latest version of our application [here](https://www.dropbox.com/scl/fi/qw1nck0dm8bpd40pema3q/LinesOfAction.jar?rlkey=zct0abwkfzyfzfjqmlvxd7rmx&dl=0 "Download app").
+
+# Data gathered from simulations
+
+Bellow we have displayed the data gathered from a series of simulations demonstrating the effects the employed techniques
+have on our agent
+
 ## Results obtained from simulating two AI agents with different evaluation functions at same depth
 <div>
 <h4>Results from simulation 1:</h4>
