@@ -5,11 +5,12 @@ In this project we have a fully playable implementation of the game and an agent
 many of the well known search techniques generally used in adversarial search.
 
 You can download the latest version of our application [here](https://www.dropbox.com/scl/fi/qw1nck0dm8bpd40pema3q/LinesOfAction.jar?rlkey=zct0abwkfzyfzfjqmlvxd7rmx&dl=0 "Download app").
-
-# Data gathered from simulations
+**(NOTE:  you need java 19 or later to run the game)**
 
 Bellow we have displayed the data gathered from a series of simulations demonstrating the effects the employed techniques
-have on our agent
+have on our agent.
+
+Our source data neatly presented and organised can be found [here](https://finkiukim-my.sharepoint.com/:x:/g/personal/david_stankovski_students_finki_ukim_mk/EXHHZ6FbRmhKh9WW7E2L2AcBmHmEsamCrC289FRQLWpRXw?e=cKWfRN "Go to data sheets").
 
 ## Results obtained from simulating two AI agents with different evaluation functions at same depth
 <div>
